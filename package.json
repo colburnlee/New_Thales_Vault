@@ -1,0 +1,19 @@
+{
+  "name": "new_thales_vault",
+  "version": "1.0.0",
+  "description": "# vault-bots",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/colburnlee/New_Thales_Vault.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/colburnlee/New_Thales_Vault/issues"
+  },
+  "homepage": "https://github.com/colburnlee/New_Thales_Vault#readme"
+}
