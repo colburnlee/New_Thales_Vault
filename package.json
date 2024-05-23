@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/colburnlee/New_Thales_Vault/issues"
   },
-  "homepage": "https://github.com/colburnlee/New_Thales_Vault#readme"
+  "homepage": "https://github.com/colburnlee/New_Thales_Vault#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ethers": "^6.12.1",
+    "firebase": "^10.12.1",
+    "firebase-admin": "^12.1.1"
+  }
 }
