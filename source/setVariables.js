@@ -4,7 +4,7 @@ const { ethers } = require("ethers");
 require("dotenv").config();
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY);
 
-const setVariables = async() => {
+const setVariables = async (db) => {
     const contract = new ethers.Contract(
         process.env.AMM_VAULT_CONTRACT,
         Vault.vaultContract.abi,

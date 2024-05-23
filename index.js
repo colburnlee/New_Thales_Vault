@@ -3,6 +3,7 @@ const process = require("process");
 const { initializeApp } = require('firebase-admin/app');
 const serviceAccount = require('./constants');
 const { getFirestore } = require('firebase-admin/firestore');
+const setVariables = require('./source/setVariables')
 
 
 initializeApp({
@@ -66,6 +67,7 @@ async function doLoop() {
       "==================== START PROCESSING OP VAULT ===================="
     );
     // Set variables - current round info, set network information
+     await setVariables(db)
     // Set history of trades within same round
     // check wallet to return funds available to trade and contract addresses of vaults interacted with within same round
     // check vaults on network to 
