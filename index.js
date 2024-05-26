@@ -1,16 +1,10 @@
 require("dotenv").config();
 const process = require("process");
-const { initializeApp } = require('firebase-admin/app');
-const serviceAccount = require('./constants');
-const { getFirestore } = require('firebase-admin/firestore');
-const setVariables = require('./source/setVariables')
+const {setVariables} = require('./source/setVariables')
+const { checkMarkets } = require('./source/checkMarkets')
+const { updateRoundInfo } = require('./source/updateRoundInfo')
 
 
-initializeApp({
-  credential: cert(serviceAccount)
-});
-
-const db = getFirestore();
 
 async function doLoop() {
     while (true) {
@@ -54,7 +48,7 @@ async function doLoop() {
     // );
   // }
   
-  doLoop();
+  // doLoop();
   
   function delay(time) {
     return new Promise(function (resolve) {
@@ -67,14 +61,19 @@ async function doLoop() {
       "==================== START PROCESSING OP VAULT ===================="
     );
     // Set variables - current round info, set network information
-     await setVariables(db)
-    // Set history of trades within same round
-    // check wallet to return funds available to trade and contract addresses of vaults interacted with within same round
-    // check vaults on network to 
-    // 
+    const { wallet, round, roundEndTime, closingDate, skewImpactLimit, db, priceUpperLimit, priceLowerLimit } = await setVariables("optimism")
+    // Get trade log from db. Update db with current round info
+    const tradeLog = await updateRoundInfo(db, round, roundEndTime, closingDate)
+    // TODO: const trades = await checkHistory(db, round)
+    // check db to return funds available to trade and contract addresses of vaults interacted with within same round
+    // check markets on network for eligible trades
+    // const openTrades = await checkMarkets(wallet, round, roundEndTime, closingDate, skewImpactLimit, priceUpperLimit, priceLowerLimit)
+    // execute trades
     
     console.log(
       "++++++++++++++++++++ END PROCESSING OP VAULT ++++++++++++++++++++"
     );
 
   }
+
+doMain()
