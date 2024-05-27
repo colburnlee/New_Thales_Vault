@@ -13,7 +13,7 @@ const { checkTrades } = require('./source/checkTrades')
 async function doLoop() {
     while (true) {
       try {
-        await doMain(auth);
+        await doMain();
         await delay(1000 * 60 * +process.env.DELAY_IN_MINUTES);
       } catch (e) {
         console.log(e);
@@ -64,8 +64,8 @@ async function doLoop() {
     console.log(
       "==================== START PROCESSING OP VAULT ===================="
     );
-    let networkId = '10'
-    let positionalContractAddress = process.env.POSITIONAL_MARKET_DATA_CONTRACT
+    const networkId = '10'
+    const positionalContractAddress = process.env.POSITIONAL_MARKET_DATA_CONTRACT
     
     // Set variables - current round info, set network information
     const { wallet, round, roundEndTime, closingDate, skewImpactLimit, db, priceUpperLimit, priceLowerLimit } = await setVariables("optimism")
@@ -73,17 +73,9 @@ async function doLoop() {
     const tradeLog = await updateRoundInfo(db, round, roundEndTime, closingDate)
     // check db to return funds available to trade and contract addresses of vaults interacted with within same round
     // check network for eligible markets
-    const availableMarkets = await checkMarkets(
-      networkId)    
+    const {pricesForAllActiveMarkets, priceImpactForAllActiveMarkets} = await checkMarkets(wallet, positionalContractAddress, networkId)    
     // check markets for eligible trades
-    const availableTrades = await checkTrades(priceLowerLimit,
-      priceUpperLimit,
-      roundEndTime,
-      skewImpactLimit,
-      wallet,
-      positionalContractAddress,
-      abi,
-      networkId, availableMarkets)
+    const eligibleTrades = await checkTrades(tradeLog, pricesForAllActiveMarkets, priceImpactForAllActiveMarkets, skewImpactLimit, priceUpperLimit, priceLowerLimit)
     // execute trades
     
     console.log(

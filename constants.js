@@ -14,28 +14,28 @@ const privateKey = process.env.PRIVATE_KEY;
 // };
 // console.log(serviceAccount)
 
-// let etherprovider = new ethers.providers.AlchemyProvider(
+// let etherprovider = new AlchemyProvider(
 //   process.env.NETWORK,
 //   process.env.ALCHEMY
 // );
 
-// let etherprovider = new ethers.providers.JsonRpcProvider(
+// let etherprovider = new JsonRpcProvider(
 //   "https://rpc.ankr.com/optimism"
 // );
 
-// let etherprovider = new ethers.providers.JsonRpcProvider("https://1rpc.io/op"); //https://endpoints.omniatech.io/v1/op/mainnet/public
+let etherprovider = new JsonRpcProvider("https://1rpc.io/op"); //https://endpoints.omniatech.io/v1/op/mainnet/public
 
 
 // let etherprovider = new JsonRpcProvider(process.env.OMNIA_URL);
-let etherprovider = new JsonRpcProvider(
-  "https://optimism-rpc.publicnode.com"
-);
+// let etherprovider = new JsonRpcProvider(
+//   "https://optimism-rpc.publicnode.com"
+// );
 
 let arbitrumProvider = new JsonRpcProvider(
   process.env.ARBITRUM_OMNIA_URL
 );
 
-// let arbitrumProvider = new ethers.providers.JsonRpcProvider(
+// let arbitrumProvider = new JsonRpcProvider(
 //   process.env.ARBITRUM_1RPC_URL
 // );
 
