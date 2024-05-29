@@ -74,9 +74,9 @@ async function doLoop() {
     // check db to return funds available to trade and contract addresses of vaults interacted with within same round
     // check network for eligible markets
     const {pricesForAllActiveMarkets, priceImpactForAllActiveMarkets, activeMarkets} = await checkMarkets(wallet, positionalContractAddress, networkId)    
-    // check markets for eligible trades
-    const eligibleTrades = await checkTrades(tradeLog, pricesForAllActiveMarkets, priceImpactForAllActiveMarkets, skewImpactLimit, activeMarkets, networkId, priceUpperLimit, priceLowerLimit, Number(closingDate))
-    // execute trades
+    // check markets for eligible markets
+    const eligibleMarkets = await checkTrades(tradeLog, pricesForAllActiveMarkets, priceImpactForAllActiveMarkets, skewImpactLimit, activeMarkets, networkId, (Number(priceUpperLimit) / Number(1e18)), (Number(priceLowerLimit) / Number(1e18)), Number(closingDate))
+
     
     console.log(
       "++++++++++++++++++++ END PROCESSING OP VAULT ++++++++++++++++++++"

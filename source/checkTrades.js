@@ -12,13 +12,14 @@ const checkTrades = async (tradeLog, pricesForAllActiveMarkets, priceImpactForAl
       // Initialize an empty array to store trading markets.
     let tradingMarkets = [];
   for (const market of activeMarkets) {
-    console.log(market.address)
     const marketPrices = pricesForAllActiveMarkets.find(
       (prices) => prices.market.toLowerCase() === market.address
     );
     const marketPriceImpact = priceImpactForAllActiveMarkets.find(
       (priceImpact) => priceImpact.market.toLowerCase() === market.address
     );
+
+    // console.log(` Market: ${market.address}, Prices: ${marketPrices}, PriceImpact: ${marketPriceImpact}  `)
 
     if (
       inTradingWeek(+market.maturityDate, +roundEndTime) &&
@@ -27,18 +28,19 @@ const checkTrades = async (tradeLog, pricesForAllActiveMarkets, priceImpactForAl
     ) {
       try {
         let priceUP, priceDOWN, buyPriceImpactUP, buyPriceImpactDOWN;
-        buyPriceImpactUP = Number(BigInt(marketPriceImpact.upPriceImpact) / BigInt(1e18));
-        buyPriceImpactDOWN = Number(BigInt(marketPriceImpact.downPriceImpact) / BigInt(1e18));
+        buyPriceImpactUP = Number(marketPriceImpact.upPriceImpact) / 1e18;
+        buyPriceImpactDOWN = Number(marketPriceImpact.downPriceImpact) / 1e18;
+        // console.log(`Market: ${market.address} PriceImpactUP: ${marketPriceImpact.upPriceImpact} vs ${buyPriceImpactUP} PriceDOWN: ${buyPriceImpactDOWN} vs ${marketPriceImpact.downPriceImpact} `)
 
-
-        if (+networkId == "10" || +networkId == "56") {
-          priceUP = Number(BigInt(marketPrices.upPrice) / BigInt(1e18));
-          priceDOWN = Number(BigInt(marketPrices.downPrice) / BigInt(1e18));
-        } else if (+networkId == "42161" || +networkId == "56") {
-          priceUP = Number(BigInt(marketPrices.upPrice) / BigInt(1e6));
-          priceDOWN = Number(BigInt(marketPrices.downPrice) / BigInt(1e6));
+        if (networkId == "10" || networkId == "56") {
+          priceUP = Number(marketPrices.upPrice) / Number(1e18)
+          priceDOWN = Number(marketPrices.downPrice) / Number(1e18)
+        } else if (networkId == "42161" || networkId == "56") {
+          priceUP = Number(marketPrices.upPrice) / Number(1e6)
+          priceDOWN = Number(marketPrices.downPrice) / Number(1e6)
         }
-        console.log(`Market: ${market.address} PriceUP: ${priceUP} PriceDOWN: ${priceDOWN}`)
+        // console.log(`Market: ${market.address} PriceUP: ${marketPrices.upPrice} vs ${priceUP} PriceDOWN: ${priceDOWN} vs ${marketPrices.downPrice} `)
+        console.log(`checking:  ${priceUP} > ${priceLowerLimit} && ${priceUP} < ${priceUpperLimit} && ${buyPriceImpactUP} < ${skewImpactLimit}`)
         if (
           priceUP > priceLowerLimit &&
           priceUP < priceUpperLimit &&
@@ -83,16 +85,14 @@ const checkTrades = async (tradeLog, pricesForAllActiveMarkets, priceImpactForAl
 
 const  inTradingWeek = (maturityDate, roundEndTime) => {
   const now = Date.now();
-  console.log(
-    `now: ${now} - maturityDate: ${new Date(
-      maturityDate
-    )} - roundEndTime: ${roundEndTime} - 900000: ${new Date(
-      roundEndTime + 900000
-    )} - ${
-      Number(maturityDate) > Number(now) &&
-      Number(maturityDate) < Number(roundEndTime + 900000)
-    }`
-  );
+  // console.log(
+  //   `now: ${now} - maturityDate: ${new Date(
+  //     maturityDate
+  //   )} - roundEndTime: ${roundEndTime} - inTradingWeek: ${
+  //     Number(maturityDate) > Number(now) &&
+  //     Number(maturityDate) < Number(roundEndTime)
+  //   }`
+  // );
   if (
     Number(maturityDate) > Number(now) &&
     Number(maturityDate) < Number(roundEndTime)
