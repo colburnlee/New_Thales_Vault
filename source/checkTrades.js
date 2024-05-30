@@ -1,7 +1,4 @@
 
-const ethers = require("ethers");
-
-
 const Position = {
     UP: 0,
     DOWN: 1,
@@ -124,3 +121,17 @@ module.exports={checkTrades}
       finalPrice: 0
     }
   **/
+
+    /**
+     * Example output:
+     * 
+     * [
+  {
+    address: '0xeddebe9023e8b1c62cdc3f0ec302af90ec12b1b6',
+    position: 0,
+    currencyKey: 'SNX',
+    price: 0.7582090230864841
+  }
+]
+     * 
+     */
