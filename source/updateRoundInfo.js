@@ -8,11 +8,13 @@ const updateRoundInfo = async (db, round, roundEndTime, closingDate ) => {
     if (roundInfoRef.docs.length === 0) {
         console.log(`creating a new database entry for round ${round}`)
         const tradeLog = {}
-        const errorLog = {}
+        const errorLog = {} 
         await db.collection('round').add({
             roundEndTime: roundEndTime.toString(),
             closingDate: closingDate.toString(),
             round: round.toString(),
+            availableAllocationForMarket : {},
+            availableAllocationForRound: "50000000000000000000", // $50
             tradeLog: tradeLog,
             errorLog: errorLog
         })
@@ -20,9 +22,11 @@ const updateRoundInfo = async (db, round, roundEndTime, closingDate ) => {
     } 
     const tradeLog = roundInfoRef.docs[0].tradeLog
     const errorLog = roundInfoRef.docs[0].errorLog
+    const availableAllocationForMarket = roundInfoRef.docs[0].availableAllocationForMarket
+    const availableAllocationForRound = roundInfoRef.docs[0].availableAllocationForRound
     
 
-    return {tradeLog, errorLog}
+    return {availableAllocationForMarket, availableAllocationForRound, tradeLog, errorLog}
     
 }
 

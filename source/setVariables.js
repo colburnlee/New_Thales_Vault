@@ -55,12 +55,16 @@ const setVariables = async (network) => {
   const skewImpactLimit = networkRef.docs[0].data().skewImpactLimit;
   const priceUpperLimit = networkRef.docs[0].data().priceUpperLimit;
   const priceLowerLimit = networkRef.docs[0].data().priceLowerLimit;
+  const minTradeAmount = networkRef.docs[0].data().minTradeAmount;
+
+  
+
 
   // Log the vault information.
   console.log(
     `Vault Information... Round: ${round}, Round End Time: ${roundEndTime}, Closing Date: ${closingDate}, Skew Impact Limit: ${skewImpactLimit} price upper limit: ${priceUpperLimit} price lower limit: ${priceLowerLimit} `)
 
-  return { wallet, round, roundEndTime, closingDate, skewImpactLimit, db, priceUpperLimit, priceLowerLimit };
+  return { wallet, round, roundEndTime, closingDate, skewImpactLimit, db, priceUpperLimit, priceLowerLimit, minTradeAmount};
 }
 
 module.exports = { setVariables };
