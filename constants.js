@@ -1,7 +1,6 @@
-const { ethers, JsonRpcProvider } = require('ethers');
+const { ethers, JsonRpcProvider, getGasPrice } = require("ethers");
 require("dotenv").config();
 const privateKey = process.env.PRIVATE_KEY;
-
 
 // const serviceAccount = {
 //   apiKey: process.env.API_KEY,
@@ -25,33 +24,24 @@ const privateKey = process.env.PRIVATE_KEY;
 
 let etherprovider = new JsonRpcProvider("https://1rpc.io/op"); //https://endpoints.omniatech.io/v1/op/mainnet/public
 
-
 // let etherprovider = new JsonRpcProvider(process.env.OMNIA_URL);
 // let etherprovider = new JsonRpcProvider(
 //   "https://optimism-rpc.publicnode.com"
 // );
 
-let arbitrumProvider = new JsonRpcProvider(
-  process.env.ARBITRUM_OMNIA_URL
-);
+let arbitrumProvider = new JsonRpcProvider(process.env.ARBITRUM_OMNIA_URL);
 
 // let arbitrumProvider = new JsonRpcProvider(
 //   process.env.ARBITRUM_1RPC_URL
 // );
 
-let bscProvider = new JsonRpcProvider(
-  process.env.BSC_1RPC_URL
-);
+let bscProvider = new JsonRpcProvider(process.env.BSC_1RPC_URL);
 
-let polygonProvider = new JsonRpcProvider(
-  process.env.POLYGON_LLAMANODE_URL
-);
+let polygonProvider = new JsonRpcProvider(process.env.POLYGON_LLAMANODE_URL);
 
 let baseUrl = process.env.BASE_URL;
 
-
 let wallet = new ethers.Wallet(privateKey, etherprovider);
-
 
 module.exports = {
   privateKey,
@@ -61,5 +51,4 @@ module.exports = {
   bscProvider,
   polygonProvider,
   wallet,
-  // serviceAccount
 };

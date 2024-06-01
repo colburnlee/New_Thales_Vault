@@ -2,12 +2,11 @@ const Vault = require("../contracts/Vault.js");
 // const Vault = require("../contracts/VaultContract.js");
 const { ethers } = require("ethers");
 require("dotenv").config();
-const { wallet } = require('../constants.js')
-const { initializeApp } = require('firebase-admin/app');
-const serviceAccount = require('../firebase.json');
-const { getFirestore } = require('firebase-admin/firestore');
+const { wallet, etherprovider, gasPrice } = require("../constants.js");
+const { initializeApp } = require("firebase-admin/app");
+const serviceAccount = require("../firebase.json");
+const { getFirestore } = require("firebase-admin/firestore");
 var admin = require("firebase-admin");
-
 
 /**
  * This function initializes the Firebase Admin SDK and retrieves relevant data from the blockchain and Firestore.
@@ -18,17 +17,17 @@ var admin = require("firebase-admin");
 const setVariables = async (network) => {
   // Initialize the Firebase Admin SDK with the service account credentials.
   initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
   });
 
   // Log a message indicating that the contract is being read.
-  console.log('reading contract: ', process.env.AMM_VAULT_CONTRACT);
+  console.log("reading contract: ", process.env.AMM_VAULT_CONTRACT);
 
   // Create a new ethers.Contract object for interacting with the AMM Vault contract.
   const contract = new ethers.Contract(
     process.env.AMM_VAULT_CONTRACT,
     Vault.abi,
-    wallet
+    wallet,
   );
 
   // Get the current round number from the contract.
@@ -44,7 +43,10 @@ const setVariables = async (network) => {
   const db = getFirestore();
 
   // Query the 'network' collection for the network with the specified name.
-  const networkRef = await db.collection('network').where('name', '==', network).get();
+  const networkRef = await db
+    .collection("network")
+    .where("name", "==", network)
+    .get();
 
   // Check if the network reference is empty.
   if (networkRef.empty) {
@@ -57,14 +59,25 @@ const setVariables = async (network) => {
   const priceLowerLimit = networkRef.docs[0].data().priceLowerLimit;
   const minTradeAmount = networkRef.docs[0].data().minTradeAmount;
 
-  
-
+  // // Get Gas Price
+  // const gasPrice = await etherprovider.getGasPrice();
 
   // Log the vault information.
   console.log(
-    `Vault Information... Round: ${round}, Round End Time: ${roundEndTime}, Closing Date: ${closingDate}, Skew Impact Limit: ${skewImpactLimit} price upper limit: ${priceUpperLimit} price lower limit: ${priceLowerLimit} `)
+    `Vault Information... Round: ${round}, Round End Time: ${roundEndTime}, Closing Date: ${closingDate}, Skew Impact Limit: ${skewImpactLimit} price upper limit: ${priceUpperLimit} price lower limit: ${priceLowerLimit} `,
+  );
 
-  return { wallet, round, roundEndTime, closingDate, skewImpactLimit, db, priceUpperLimit, priceLowerLimit, minTradeAmount};
-}
+  return {
+    wallet,
+    round,
+    roundEndTime,
+    closingDate,
+    skewImpactLimit,
+    db,
+    priceUpperLimit,
+    priceLowerLimit,
+    minTradeAmount,
+  };
+};
 
 module.exports = { setVariables };

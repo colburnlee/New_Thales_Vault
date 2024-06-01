@@ -1,19 +1,28 @@
-
 const Position = {
-    UP: 0,
-    DOWN: 1,
-    DRAW: 2,
-  };
+  UP: 0,
+  DOWN: 1,
+  DRAW: 2,
+};
 
-const checkTrades = async (tradeLog, pricesForAllActiveMarkets, priceImpactForAllActiveMarkets, skewImpactLimit, activeMarkets, networkId, priceUpperLimit, priceLowerLimit, roundEndTime) => {
-      // Initialize an empty array to store trading markets.
-    let tradingMarkets = [];
+const checkTrades = async (
+  tradeLog,
+  pricesForAllActiveMarkets,
+  priceImpactForAllActiveMarkets,
+  skewImpactLimit,
+  activeMarkets,
+  networkId,
+  priceUpperLimit,
+  priceLowerLimit,
+  roundEndTime,
+) => {
+  // Initialize an empty array to store trading markets.
+  let tradingMarkets = [];
   for (const market of activeMarkets) {
     const marketPrices = pricesForAllActiveMarkets.find(
-      (prices) => prices.market.toLowerCase() === market.address
+      (prices) => prices.market.toLowerCase() === market.address,
     );
     const marketPriceImpact = priceImpactForAllActiveMarkets.find(
-      (priceImpact) => priceImpact.market.toLowerCase() === market.address
+      (priceImpact) => priceImpact.market.toLowerCase() === market.address,
     );
 
     // console.log(` Market: ${market.address}, Prices: ${marketPrices}, PriceImpact: ${marketPriceImpact}  `)
@@ -30,14 +39,16 @@ const checkTrades = async (tradeLog, pricesForAllActiveMarkets, priceImpactForAl
         // console.log(`Market: ${market.address} PriceImpactUP: ${marketPriceImpact.upPriceImpact} vs ${buyPriceImpactUP} PriceDOWN: ${buyPriceImpactDOWN} vs ${marketPriceImpact.downPriceImpact} `)
 
         if (networkId == "10" || networkId == "56") {
-          priceUP = Number(marketPrices.upPrice) / Number(1e18)
-          priceDOWN = Number(marketPrices.downPrice) / Number(1e18)
+          priceUP = Number(marketPrices.upPrice) / Number(1e18);
+          priceDOWN = Number(marketPrices.downPrice) / Number(1e18);
         } else if (networkId == "42161" || networkId == "56") {
-          priceUP = Number(marketPrices.upPrice) / Number(1e6)
-          priceDOWN = Number(marketPrices.downPrice) / Number(1e6)
+          priceUP = Number(marketPrices.upPrice) / Number(1e6);
+          priceDOWN = Number(marketPrices.downPrice) / Number(1e6);
         }
         // console.log(`Market: ${market.address} PriceUP: ${marketPrices.upPrice} vs ${priceUP} PriceDOWN: ${priceDOWN} vs ${marketPrices.downPrice} `)
-        console.log(`checking:  ${priceUP} > ${priceLowerLimit} && ${priceUP} < ${priceUpperLimit} && ${buyPriceImpactUP} < ${skewImpactLimit}`)
+        console.log(
+          `checking:  ${priceUP} > ${priceLowerLimit} && ${priceUP} < ${priceUpperLimit} && ${buyPriceImpactUP} < ${skewImpactLimit}`,
+        );
         if (
           priceUP > priceLowerLimit &&
           priceUP < priceUpperLimit &&
@@ -68,19 +79,15 @@ const checkTrades = async (tradeLog, pricesForAllActiveMarkets, priceImpactForAl
       } catch (error) {
         console.log(error);
       }
-      
     }
-    
-    
-  }console.log(
-      `--------------${activeMarkets.length} Markets processed. ${tradingMarkets.length} Eligible -------------------`
-    );
-    return tradingMarkets;
+  }
+  console.log(
+    `--------------${activeMarkets.length} Markets processed. ${tradingMarkets.length} Eligible -------------------`,
+  );
+  return tradingMarkets;
+};
 
-}
-
-
-const  inTradingWeek = (maturityDate, roundEndTime) => {
+const inTradingWeek = (maturityDate, roundEndTime) => {
   const now = Date.now();
   // console.log(
   //   `now: ${now} - maturityDate: ${new Date(
@@ -97,11 +104,11 @@ const  inTradingWeek = (maturityDate, roundEndTime) => {
     return true;
   }
   return false;
-}
+};
 
-module.exports={checkTrades}
+module.exports = { checkTrades };
 
- /* *
+/* *
     Process individual markets
       Schema:  {
       customMarket: false,
@@ -122,7 +129,7 @@ module.exports={checkTrades}
     }
   **/
 
-    /**
+/**
      * Example output:
      * 
      * [

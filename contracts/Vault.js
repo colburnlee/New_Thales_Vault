@@ -1359,5 +1359,4 @@ const vaultContract = {
   ],
 };
 
-module.exports = 
-  vaultContract
+module.exports = vaultContract;
