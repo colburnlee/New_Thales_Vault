@@ -6,6 +6,7 @@ const { updateRoundInfo } = require('./source/updateRoundInfo')
 const { positionalMarketDataContract } = require('./contracts/PositionalMarketData')
 const { checkTrades } = require('./source/checkTrades')
 const { buildOrder } = require('./source/buildOrder')
+const { executeTrade } require('./source/executeTrade')
 
 
 
@@ -76,7 +77,8 @@ async function doLoop() {
     const {pricesForAllActiveMarkets, priceImpactForAllActiveMarkets, activeMarkets} = await checkMarkets(wallet, positionalContractAddress, networkId)    
     // check markets for eligible markets
     const eligibleMarkets = await checkTrades(tradeLog, pricesForAllActiveMarkets, priceImpactForAllActiveMarkets, skewImpactLimit, activeMarkets, networkId, (Number(priceUpperLimit) / Number(1e18)), (Number(priceLowerLimit) / Number(1e18)), Number(closingDate))
-    const amountToTrade = buildOrder(eligibleMarkets, tradeLog, skewImpactLimit, round, +networkId, minTradeAmount, availableAllocationForMarket, availableAllocationForRound)
+    const builtOrders = buildOrder(eligibleMarkets, tradeLog, skewImpactLimit, round, +networkId, minTradeAmount, availableAllocationForMarket, availableAllocationForRound)
+    
     console.log(
       "++++++++++++++++++++ END PROCESSING OP VAULT ++++++++++++++++++++"
     );

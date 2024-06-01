@@ -2,8 +2,10 @@ require("dotenv").config();
 const thalesAMMContract = process.env.THALES_AMM_CONTRACT
 
 const buildOrder = (eligibleMarkets, tradeLog, skewImpactLimit, round, networkId, minTradeAmount, tradingAllocation) => {
+  let builtOrders = [];
   for (const key in eligibleMarkets) {
     let market = eligibleMarkets[key];
+    let quote;
 
     console.log(
         `--------------------Processing ${market.currencyKey} ${
@@ -22,12 +24,21 @@ const buildOrder = (eligibleMarkets, tradeLog, skewImpactLimit, round, networkId
             market.position > 0 ? "DOWN" : "UP"
           } Market is eligible to trade.`)
     }
-
+ } 
       
-        const buildQuote = buildQuote(market, round, skewImpactLimit, thalesAMMContract, networkId, tradingAllocation, tradedInRoundAlready, tradeLog);
-}
+        quote = buildQuote(market, round, skewImpactLimit, thalesAMMContract, networkId, tradingAllocation, tradedInRoundAlready, tradeLog);
+        if (quote.amount > 0) {
+          builtOrders.push({
+            market: market.address,
+            amount: quote.amount,
+            quote: quote.quote,
+            position: quote.position,
+          });
+        }  
+
+     
   }
-  return
+  return builtOrders;
 }
 
 const tradedInRound =  (tradeLog, market) => {
@@ -189,5 +200,7 @@ return { amount: finalAmount, quote: finalQuote, position: market.position };
           }: ${remainingAllocation}`)
     return remainingAllocation
     };
+
+
 
 module.exports = {buildOrder}
