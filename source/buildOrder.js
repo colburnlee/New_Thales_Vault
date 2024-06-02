@@ -47,11 +47,12 @@ const buildOrder = (
       tradeLog,
     );
     if (quote.amount > 0) {
+      // market { address: '0xc1af77a1efea7326df378af9195306f0a3094f51', position: 1, currencyKey: 'LINK', price: 0.8111760272895937 }
       builtOrders.push({
-        market: market.address,
         amount: quote.amount,
         quote: quote.quote,
         position: quote.position,
+        market: market,
       });
     }
   }
@@ -205,7 +206,12 @@ const buildQuote = async (
       2,
     )}. Amount to buy: ${finalAmount}`,
   );
-  return { amount: finalAmount, quote: finalQuote, position: market.position };
+  return {
+    amount: finalAmount,
+    quote: finalQuote,
+    position: market.position,
+    market: market,
+  };
 };
 
 const GetAllocationForTradedInRound = (

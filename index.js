@@ -78,14 +78,12 @@ async function doMain() {
     priceUpperLimit,
     priceLowerLimit,
     minTradeAmount,
-    gasPrice,
   } = await setVariables("optimism");
   // Get trade log from db. Update db with current round info
   const {
     availableAllocationForMarket,
     availableAllocationForRound,
     tradeLog,
-    errorLog,
   } = await updateRoundInfo(db, round, roundEndTime, closingDate);
   // check db to return funds available to trade and contract addresses of vaults interacted with within same round
   // check network for eligible markets
@@ -116,7 +114,7 @@ async function doMain() {
     availableAllocationForMarket,
     availableAllocationForRound,
   );
-  const executedTrades = await executeTrade(builtOrders, round, networkId);
+  const executedTrades = await executeTrade(builtOrders, round, networkId, db);
   console.log(
     "++++++++++++++++++++ END PROCESSING OP VAULT ++++++++++++++++++++",
   );

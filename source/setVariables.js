@@ -43,21 +43,21 @@ const setVariables = async (network) => {
   const db = getFirestore();
 
   // Query the 'network' collection for the network with the specified name.
-  const networkRef = await db
-    .collection("network")
-    .where("name", "==", network)
-    .get();
-
+  const networkRef = db.collection("network").where("name", "==", network);
+  const networkData = await networkRef.get();
   // Check if the network reference is empty.
-  if (networkRef.empty) {
+  if (networkData.empty) {
     console.log("Ref empty!");
   }
 
-  // Set the skew impact limit to networkRef reference
-  const skewImpactLimit = networkRef.docs[0].data().skewImpactLimit;
-  const priceUpperLimit = networkRef.docs[0].data().priceUpperLimit;
-  const priceLowerLimit = networkRef.docs[0].data().priceLowerLimit;
-  const minTradeAmount = networkRef.docs[0].data().minTradeAmount;
+  // const tradeLogRef = db.collection(round.toString()).doc("tradeLog");
+  // const errorLogRef = db.collection(round.toString()).doc("errorLog");
+
+  // Set the skew impact limit to networkData reference
+  const skewImpactLimit = networkData.docs[0].data().skewImpactLimit;
+  const priceUpperLimit = networkData.docs[0].data().priceUpperLimit;
+  const priceLowerLimit = networkData.docs[0].data().priceLowerLimit;
+  const minTradeAmount = networkData.docs[0].data().minTradeAmount;
 
   // // Get Gas Price
   // const gasPrice = await etherprovider.getGasPrice();
@@ -77,6 +77,8 @@ const setVariables = async (network) => {
     priceUpperLimit,
     priceLowerLimit,
     minTradeAmount,
+    // tradeLogRef,
+    // errorLogRef
   };
 };
 

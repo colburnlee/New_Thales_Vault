@@ -46,7 +46,6 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
         activeMarkets.length,
       ), // Get price impacts for all active markets.
     ]);
-  // eslint-disable-next-line no-constant-condition
   console.log(
     `Found ${activeMarkets.length} markets on ${(networkId = "10" ? "optimism" : "network")}. `,
   );
