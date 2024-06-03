@@ -38,6 +38,9 @@ const setVariables = async (network) => {
 
   // Convert the round end time to a JavaScript Date object and then get the timestamp.
   const closingDate = new Date(roundEndTime * 1000.0).getTime();
+  console.log(
+    `round: ${round}, Round End Time: ${roundEndTime}, Closing Date: ${closingDate}`,
+  );
 
   // Get a reference to the Firestore database.
   const db = getFirestore();

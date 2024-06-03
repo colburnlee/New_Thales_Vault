@@ -94,7 +94,6 @@ async function doMain() {
   } = await checkMarkets(wallet, positionalContractAddress, networkId);
   // check markets for eligible markets
   const eligibleMarkets = await checkTrades(
-    tradeLog,
     pricesForAllActiveMarkets,
     priceImpactForAllActiveMarkets,
     skewImpactLimit,

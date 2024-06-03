@@ -5,7 +5,6 @@ const Position = {
 };
 
 const checkTrades = async (
-  tradeLog,
   pricesForAllActiveMarkets,
   priceImpactForAllActiveMarkets,
   skewImpactLimit,
@@ -13,7 +12,7 @@ const checkTrades = async (
   networkId,
   priceUpperLimit,
   priceLowerLimit,
-  roundEndTime,
+  closingDate,
 ) => {
   // Initialize an empty array to store trading markets.
   let tradingMarkets = [];
@@ -25,13 +24,15 @@ const checkTrades = async (
       (priceImpact) => priceImpact.market.toLowerCase() === market.address,
     );
 
-    // console.log(` Market: ${market.address}, Prices: ${marketPrices}, PriceImpact: ${marketPriceImpact}  `)
-
+    // console.log(` Market: ${market.address}, maturity date: ${market.maturityDate}, roundEndTime: ${roundEndTime} `)
     if (
-      inTradingWeek(+market.maturityDate, +roundEndTime) &&
+      inTradingWeek(+market.maturityDate, +closingDate) &&
       marketPrices &&
       marketPriceImpact
     ) {
+      console.log(
+        `Market: ${market.address} Prices: ${marketPrices} PriceImpact: ${marketPriceImpact}  `,
+      );
       try {
         let priceUP, priceDOWN, buyPriceImpactUP, buyPriceImpactDOWN;
         buyPriceImpactUP = Number(marketPriceImpact.upPriceImpact) / 1e18;
@@ -41,7 +42,8 @@ const checkTrades = async (
         if (networkId == "10" || networkId == "56") {
           priceUP = Number(marketPrices.upPrice) / Number(1e18);
           priceDOWN = Number(marketPrices.downPrice) / Number(1e18);
-        } else if (networkId == "42161" || networkId == "56") {
+        }
+        if (networkId == "42161" || networkId == "56") {
           priceUP = Number(marketPrices.upPrice) / Number(1e6);
           priceDOWN = Number(marketPrices.downPrice) / Number(1e6);
         }
@@ -87,19 +89,14 @@ const checkTrades = async (
   return tradingMarkets;
 };
 
-const inTradingWeek = (maturityDate, roundEndTime) => {
+const inTradingWeek = (maturityDate, closingDate) => {
   const now = Date.now();
-  // console.log(
-  //   `now: ${now} - maturityDate: ${new Date(
-  //     maturityDate
-  //   )} - roundEndTime: ${roundEndTime} - inTradingWeek: ${
-  //     Number(maturityDate) > Number(now) &&
-  //     Number(maturityDate) < Number(roundEndTime)
-  //   }`
-  // );
+  console.log(
+    `maturityDate greater than now? ${Number(maturityDate) > Number(now)}. closingDate greater than maturity date? ${Number(maturityDate) < Number(closingDate)}`,
+  );
   if (
     Number(maturityDate) > Number(now) &&
-    Number(maturityDate) < Number(roundEndTime)
+    Number(maturityDate) < Number(closingDate)
   ) {
     return true;
   }

@@ -9,14 +9,6 @@ const thalesData = require("thales-data");
 const ethers = require("ethers");
 
 const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
-  // Get the number of active markets from the Positonal Market Manager Contract
-  const PositionalMarketManagerContract = new ethers.Contract(
-    process.env.POSITIONAL_MARKET_MANAGER,
-    PositionalMarketManagerContractAbi.abi,
-    wallet,
-  );
-
-  // const activeMarkets = Number(await PositionalMarketManagerContract.numActiveMarkets())
   let minMaturityValue = parseInt(new Date().getTime() / 1000);
   let activeMarkets = await thalesData.binaryOptions.markets({
     max: Infinity,
