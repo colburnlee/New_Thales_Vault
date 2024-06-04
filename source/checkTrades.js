@@ -1,9 +1,16 @@
-const Position = {
-  UP: 0,
-  DOWN: 1,
-  DRAW: 2,
-};
-
+/**
+ * Evaluates the current trading markets for the thales AMM given certain criteria
+ *
+ * @param {Array<Object>} pricesForAllActiveMarkets - An array of objects containing market prices.
+ * @param {Array<Object>} priceImpactForAllActiveMarkets - An array of objects containing price impact data.
+ * @param {number} skewImpactLimit - The maximum allowed skew impact.
+ * @param {Array<Object>} activeMarkets - An array of active market objects.
+ * @param {string} networkId - The ID of the network.
+ * @param {number} priceUpperLimit - The upper price limit for trading.
+ * @param {number} priceLowerLimit - The lower price limit for trading.
+ * @param {number} closingDate - The closing date for trading.
+ * @returns {Array<Object>} - An array of eligible trading markets.
+ */
 const checkTrades = async (
   pricesForAllActiveMarkets,
   priceImpactForAllActiveMarkets,
@@ -89,18 +96,32 @@ const checkTrades = async (
   return tradingMarkets;
 };
 
+/**
+ * Checks if the given maturity date is within the current trading week.
+ *
+ * @param {number} maturityDate - The timestamp of the maturity date.
+ * @param {number} closingDate - The timestamp of the closing date of the trading week.
+ * @returns {boolean} True if the maturity date is within the current trading week, false otherwise.
+ */
 const inTradingWeek = (maturityDate, closingDate) => {
-  const now = Date.now();
+  const now = Date.now(); // Get the current timestamp.
   console.log(
     `maturityDate greater than now? ${Number(maturityDate) > Number(now)}. closingDate greater than maturity date? ${Number(maturityDate) < Number(closingDate)}`,
-  );
+  ); // Log a message to the console for debugging.
+  // Check if the maturity date is after the current time and before the closing date.
   if (
     Number(maturityDate) > Number(now) &&
     Number(maturityDate) < Number(closingDate)
   ) {
-    return true;
+    return true; // Maturity date is within the trading week.
   }
-  return false;
+  return false; // Maturity date is not within the trading week.
+};
+
+const Position = {
+  UP: 0,
+  DOWN: 1,
+  DRAW: 2,
 };
 
 module.exports = { checkTrades };

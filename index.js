@@ -92,6 +92,7 @@ async function doMain() {
     priceImpactForAllActiveMarkets,
     activeMarkets,
   } = await checkMarkets(wallet, positionalContractAddress, networkId);
+
   // check markets for eligible markets
   const eligibleMarkets = await checkTrades(
     pricesForAllActiveMarkets,
@@ -103,17 +104,26 @@ async function doMain() {
     Number(priceLowerLimit) / Number(1e18),
     Number(closingDate),
   );
-  const builtOrders = buildOrder(
+
+  // build and submit orders
+  const builtOrders = await buildOrder(
     eligibleMarkets,
     tradeLog,
     skewImpactLimit,
     round,
     +networkId,
     minTradeAmount,
-    availableAllocationForMarket,
     availableAllocationForRound,
+    availableAllocationForMarket,
   );
-  const executedTrades = await executeTrade(builtOrders, round, networkId, db);
+
+  const executedTrades = await executeTrade(
+    builtOrders,
+    round,
+    networkId,
+    db,
+    tradeLog,
+  );
   console.log(
     "++++++++++++++++++++ END PROCESSING OP VAULT ++++++++++++++++++++",
   );
