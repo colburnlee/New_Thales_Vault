@@ -5,6 +5,7 @@ const ammVaultContract = require("../contracts/VaultContract");
 const executeTrade = async (builtOrders, round, networkId, db) => {
   const gasPrice = (await etherprovider.getFeeData()).gasPrice;
   const contract = setVariable(networkId);
+  const w3utils = require("web3-utils");
 
   for (const order of builtOrders) {
     // {
@@ -21,12 +22,12 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
         let tx = await contract.buyFromAMM(
           order.market.address,
           order.position.toString(),
-          (BigInt(order.amount) / BigInt(1e18)).toString(),
-          (BigInt(order.quote) / BigInt(1e18)).toString(),
+          w3utils.toWei(order.amount, "ether"),
+          w3utils.toWei(order.quote, "ether"),
           "2500000000000000",
           {
             gasLimit: "10000000",
-            gasPrice: gasPrice.add(gasPrice.div(5)).toString(),
+            gasPrice: gasPrice.add(gasPrice.div(5)).toString(), // FIX THIS
           },
         );
         let reciept = await tx.wait();
@@ -39,8 +40,8 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           currencyKey: order.market.currencyKey,
           market: order.market.address,
           position: order.position > 0 ? "DOWN" : "UP",
-          amount: order.amount,
-          quote: order.quote.toString(),
+          amount: w3utils.toWei(order.amount, "ether"),
+          quote: w3utils.toWei(order.quote, "ether"),
           timestamp: timestamp,
           transactionHash: transactionHash,
         };

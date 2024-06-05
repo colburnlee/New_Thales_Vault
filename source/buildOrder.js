@@ -2,6 +2,7 @@ require("dotenv").config();
 const { ethers } = require("ethers");
 const { wallet } = require("../constants");
 const { thalesAMMContract: abi } = require("../contracts/ThalesAMM");
+const w3utils = require("web3-utils");
 const thalesAMMContract = new ethers.Contract(
   process.env.THALES_AMM_CONTRACT,
   abi.abi,
@@ -56,7 +57,7 @@ const buildOrder = async (
         );
       }
     }
-    quote = buildQuote(
+    quote = await buildQuote(
       market,
       round,
       skewImpactLimit,
@@ -71,7 +72,7 @@ const buildOrder = async (
       // market example 2: { address: '0xc1af77a1efea7326df378af9195306f0a3094f51', position: 1, currencyKey: 'LINK', price: 0.8111760272895937 }
       builtOrders.push({
         amount: quote.amount,
-        quote: quote.price,
+        quote: quote.quote,
         position: quote.position,
         market: market,
       });
@@ -181,11 +182,13 @@ const buildQuote = async (
   }
   while (amount < maxAmmAmount) {
     let skewImpact =
-      (await thalesAMMContract.buyPriceImpact(
-        market.address,
-        market.position,
-        amount,
-      )) / BigInt(decimals);
+      Number(
+        await thalesAMMContract.buyPriceImpact(
+          market.address,
+          market.position,
+          w3utils.toWei(amount, "ether"),
+        ),
+      ) / 1e18;
     console.log(
       `Skew Impact for ${amount} ${market.currencyKey} ${
         market.position > 0 ? "DOWN" : "UP"
@@ -196,7 +199,7 @@ const buildQuote = async (
       `Simulated puchase impact for ${amount} ${market.currencyKey} ${
         market.position > 0 ? "DOWN" : "UP"
       }s = Skew Impact: ${
-        skewImpact <= 0 ? "-" + skewImpact.toFixed(5) : skewImpact.toFixed(5)
+        skewImpact <= 0 ? "-" + skewImpact : skewImpact
       } Skew Impact Limit: ${skewImpactLimit}`,
     );
     if (skewImpact <= skewImpactLimit) break;
@@ -208,13 +211,17 @@ const buildQuote = async (
   }
 
   // Get the quote for the amount of tokens to buy. If the quote is over the max allocation, then reduce the amount to buy
-  quote = Number(
-    (await thalesAMMContract.buyFromAmmQuote(
-      market.address,
-      market.position,
-      amount,
-    )) / BigInt(decimals),
+  console.log(
+    `attempting to buy: ${w3utils.toWei(amount, "ether")} ${market.position} ${market.address}`,
   );
+  quote =
+    Number(
+      await thalesAMMContract.buyFromAmmQuote(
+        market.address,
+        market.position,
+        w3utils.toWei(amount, "ether"),
+      ),
+    ) / 1e18;
   console.log(
     `${amount} ${market.currencyKey} ${
       market.position > 0 ? "DOWN" : "UP"
@@ -235,13 +242,14 @@ const buildQuote = async (
       console.log(`Amount to buy is too small.`);
       return { amount: 0, quote: 0, position: market.position };
     }
-    quote = Number(
-      (await thalesAMMContract.buyFromAmmQuote(
-        market.address,
-        market.position,
-        amount,
-      )) / BigInt(decimals),
-    );
+    quote =
+      Number(
+        await thalesAMMContract.buyFromAmmQuote(
+          market.address,
+          market.position,
+          w3utils.toWei(amount, "ether"),
+        ),
+      ) / 1e18;
     console.log(
       `New quote: $${quote.toFixed(2)} for ${amount} ${market.currencyKey} ${
         market.position > 0 ? "DOWN" : "UP"
@@ -249,17 +257,21 @@ const buildQuote = async (
     );
   }
   finalAmount = amount.toFixed(0);
+
   let finalQuote =
-    (await thalesAMMContract.buyFromAmmQuote(
-      market.address,
-      market.position,
-      finalAmount * 1e18,
-    )) / decimals;
+    Number(
+      await thalesAMMContract.buyFromAmmQuote(
+        market.address,
+        market.position,
+        w3utils.toWei(amount, "ether"),
+      ),
+    ) / 1e18;
+  console.log("final quote: ", finalQuote);
   console.log(
     `Quoted Price: $${finalQuote} Max Allocation: $${+availableAllocationForMarket.toFixed(2)}. Amount to buy: ${+finalAmount}`,
   );
   return {
-    amount: finalAmount,
+    amount: +finalAmount,
     quote: finalQuote,
     position: market.position,
     market: market,
@@ -296,3 +308,18 @@ const GetAllocationForTradedInRound = (
 };
 
 module.exports = { buildOrder };
+
+// built order example
+// [
+//   {
+//     amount: 6,
+//     quote: 4.911048190607197,
+//     position: 1,
+//     market: {
+//       address: '0xb678d8953067e6f6fbf101916871177ad245da6b',
+//       position: 1,
+//       currencyKey: 'BTC',
+//       price: 0.822769149359188
+//     }
+//   }
+// ]
