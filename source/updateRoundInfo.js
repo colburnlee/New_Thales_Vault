@@ -4,17 +4,17 @@ const updateRoundInfo = async (db, round, roundEndTime, closingDate) => {
   );
   const roundInfoRef = await db.collection("round").doc(round.toString()).get();
   const tradeLogRef = await db
-    .collection("tradelog")
+    .collection("tradeLog")
     .where("round", "==", round.toString())
     .get();
   const errorLogRef = await db
-    .collection("errorlog")
+    .collection("errorLog")
     .where("round", "==", round.toString())
     .get();
   const tradeLog = tradeLogRef.docs.map((doc) => doc.data());
   const errorLog = errorLogRef.docs.map((doc) => doc.data());
-  console.log(`tradeLog: ${tradeLog}`);
-  console.log(`errorLog: ${errorLog}`);
+  console.log(`tradeLog length: ${tradeLog.length}`);
+  console.log(`errorLog length: ${errorLog.length}`);
   // if roundInfoRef is not found, create new document
   if (!roundInfoRef.exists) {
     await createNewEntry(db, round, roundEndTime, closingDate);

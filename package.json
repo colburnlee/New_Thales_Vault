@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "clean": "prettier . --write"
+    "clean": "prettier . --write",
+    "test_firebase": "node test/firebase.js"
   },
   "repository": {
     "type": "git",
