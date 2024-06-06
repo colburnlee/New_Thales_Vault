@@ -1,11 +1,21 @@
-const { etherprovider } = require("../constants");
-const { ethers, wallet } = require("ethers");
-const ammVaultContract = require("../contracts/VaultContract");
+require("dotenv").config();
+const { etherprovider, viemAccount, wallet } = require("../constants");
+const { ethers } = require("ethers");
+const { thalesAMMContract } = require("../contracts/ThalesAMM");
+const { createPublicClient, http } = require("viem");
+const { optimism } = require("viem/chains");
+const infuraURL = process.env.INFURA_OP_URL;
+const w3utils = require("web3-utils");
+const { publicActionsL2 } = require("viem/op-stack");
+
+const OPclient = createPublicClient({
+  chain: optimism,
+  transport: http(infuraURL),
+}).extend(publicActionsL2());
 
 const executeTrade = async (builtOrders, round, networkId, db) => {
   const gasPrice = (await etherprovider.getFeeData()).gasPrice;
   const contract = setVariable(networkId);
-  const w3utils = require("web3-utils");
 
   for (const order of builtOrders) {
     // {
@@ -18,6 +28,14 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
 
     if (order.amount > 0) {
       try {
+        // determine gas price
+        let fee =
+          (await OPclient.estimateTotalFee({
+            account: viemAccount,
+          })) / BigInt(1e18);
+
+        console.log(fee);
+
         // Execute trade
         let tx = await contract.buyFromAMM(
           order.market.address,
@@ -27,11 +45,10 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           "2500000000000000",
           {
             gasLimit: "10000000",
-            gasPrice: gasPrice.add(gasPrice.div(5)).toString(), // FIX THIS
           },
         );
-        let reciept = await tx.wait();
-        let transactionHash = reciept.transactionHash;
+        let reciept = await tx.wait(2);
+        let transactionHash = reciept.hash;
         let timestamp = new Date().toLocaleString("en-US");
         console.log(`Transaction hash: ${transactionHash}`);
         let tradeLog = {
@@ -46,7 +63,11 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           transactionHash: transactionHash,
         };
         // append to db
-        const res = await db.collection("trades").add(tradeLog);
+        const res = await db
+          .collection("tradeLog")
+          .doc(transactionHash ? transactionHash : order.market.address)
+          .set(tradeLog);
+        // const res = await db.collection("trades").add(tradeLog);
         console.log(`Trade added to db with id: ${res.id}`);
       } catch (e) {
         let error = e.reason ? e.reason : e.message;
@@ -64,9 +85,10 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
         };
         console.log(error);
         // append to db
-        const res = await db
-          .collection("round")
-          .where("round", "==", round.toString());
+        // const res = await db
+        //   .collection("round")
+        //   .where("round", "==", round.toString());
+        const res = await db.collection("errorLog").add(errorMessage);
         console.log(`Trade added to db with id: ${res.id}`);
       }
     }
@@ -76,8 +98,8 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
 const setVariable = (networkId) => {
   if (+networkId == 10) {
     const contract = new ethers.Contract(
-      process.env.AMM_VAULT_CONTRACT,
-      ammVaultContract.abi,
+      process.env.THALES_AMM_CONTRACT,
+      thalesAMMContract.abi,
       wallet,
     );
     return contract;

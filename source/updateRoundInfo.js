@@ -3,13 +3,23 @@ const updateRoundInfo = async (db, round, roundEndTime, closingDate) => {
     `updateRoundInfo: ${round} roundEndTime: ${roundEndTime} closingDate: ${closingDate}`,
   );
   const roundInfoRef = await db.collection("round").doc(round.toString()).get();
+  const tradeLogRef = await db
+    .collection("tradelog")
+    .where("round", "==", round.toString())
+    .get();
+  const errorLogRef = await db
+    .collection("errorlog")
+    .where("round", "==", round.toString())
+    .get();
+  const tradeLog = tradeLogRef.docs.map((doc) => doc.data());
+  const errorLog = errorLogRef.docs.map((doc) => doc.data());
+  console.log(`tradeLog: ${tradeLog}`);
+  console.log(`errorLog: ${errorLog}`);
   // if roundInfoRef is not found, create new document
   if (!roundInfoRef.exists) {
     await createNewEntry(db, round, roundEndTime, closingDate);
   }
   const roundInfo = roundInfoRef.data();
-  const tradeLog = roundInfo.tradeLog;
-  const errorLog = roundInfo.errorLog;
   const availableAllocationForMarket = roundInfo.availableAllocationForMarket;
   const availableAllocationForRound = roundInfo.availableAllocationForRound;
   return {
@@ -30,9 +40,6 @@ const updateRoundInfo = async (db, round, roundEndTime, closingDate) => {
  */
 const createNewEntry = async (db, round, roundEndTime, closingDate) => {
   console.log(`creating a new database entry for round ${round}`);
-  // Initialize empty trade and error logs
-  const tradeLog = {};
-  const errorLog = {};
   // Prepare the data to be stored in the database
   const data = {
     roundEndTime: roundEndTime.toString(), // Convert to string for database storage
@@ -40,8 +47,6 @@ const createNewEntry = async (db, round, roundEndTime, closingDate) => {
     round: round.toString(), // Convert to string for database storage
     availableAllocationForMarket: {}, // Initialize an empty object for market allocations
     availableAllocationForRound: "50000000000000000000", // $50 initial allocation for the round
-    tradeLog: tradeLog, // Store the trade log
-    errorLog: errorLog, // Store the error log
   };
   // Get a reference to the document for this round in the "round" collection
   const ref = db.collection("round").doc(round.toString());

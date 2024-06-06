@@ -1,4 +1,5 @@
 const { ethers, JsonRpcProvider, getGasPrice } = require("ethers");
+const { privateKeyToAccount } = require("viem/accounts");
 require("dotenv").config();
 const privateKey = process.env.PRIVATE_KEY;
 
@@ -42,6 +43,7 @@ let polygonProvider = new JsonRpcProvider(process.env.POLYGON_LLAMANODE_URL);
 let baseUrl = process.env.BASE_URL;
 
 let wallet = new ethers.Wallet(privateKey, etherprovider);
+let viemAccount = privateKeyToAccount(privateKey);
 
 module.exports = {
   privateKey,
@@ -51,4 +53,5 @@ module.exports = {
   bscProvider,
   polygonProvider,
   wallet,
+  viemAccount,
 };
