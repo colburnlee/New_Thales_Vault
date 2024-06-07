@@ -1,6 +1,6 @@
 const Vault = require("../contracts/Vault.js");
 // const Vault = require("../contracts/VaultContract.js");
-const { ethers } = require("ethers");
+const { ethers, formatUnits } = require("ethers");
 require("dotenv").config();
 const { wallet, etherprovider, gasPrice } = require("../constants.js");
 const { initializeApp } = require("firebase-admin/app");
@@ -20,9 +20,6 @@ const setVariables = async (network) => {
     credential: admin.credential.cert(serviceAccount),
   });
 
-  // Log a message indicating that the contract is being read.
-  console.log("reading contract: ", process.env.AMM_VAULT_CONTRACT);
-
   // Create a new ethers.Contract object for interacting with the AMM Vault contract.
   const contract = new ethers.Contract(
     process.env.AMM_VAULT_CONTRACT,
@@ -38,8 +35,24 @@ const setVariables = async (network) => {
 
   // Convert the round end time to a JavaScript Date object and then get the timestamp.
   const closingDate = new Date(roundEndTime * 1000.0).getTime();
+
+  // Find the amount of time left in the round by subtracting closingDate from now()
+  const timeLeft = closingDate - Date.now();
+  // format timeleft into days hours minutes seconds
+  const timeLeftInDays = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const timeLeftInHours = Math.floor(
+    (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+  );
+  const timeLeftInMinutes = Math.floor(
+    (timeLeft % (1000 * 60 * 60)) / (1000 * 60),
+  );
+  const timeLeftInSeconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
   console.log(
-    `round: ${round}, Round End Time: ${roundEndTime}, Closing Date: ${closingDate}`,
+    `============================ ROUND ${round} ============================= `,
+  );
+  console.log(
+    `============ TIME REMAINING - DAYS:${timeLeftInDays} HR:${timeLeftInHours} MIN:${timeLeftInMinutes} SEC:${timeLeftInSeconds} ===========`,
   );
 
   // Get a reference to the Firestore database.
@@ -61,13 +74,14 @@ const setVariables = async (network) => {
   const priceUpperLimit = networkData.docs[0].data().priceUpperLimit;
   const priceLowerLimit = networkData.docs[0].data().priceLowerLimit;
   const minTradeAmount = networkData.docs[0].data().minTradeAmount;
+  const tradingAllocation = networkData.docs[0].data().tradingAllocation;
 
   // // Get Gas Price
   // const gasPrice = await etherprovider.getGasPrice();
 
   // Log the vault information.
   console.log(
-    `Vault Information... Round: ${round}, Round End Time: ${roundEndTime}, Closing Date: ${closingDate}, Skew Impact Limit: ${skewImpactLimit} price upper limit: ${priceUpperLimit} price lower limit: ${priceLowerLimit} `,
+    `PRICE RANGE: $${ethers.formatUnits(priceLowerLimit, "ether")} - ${ethers.formatUnits(priceUpperLimit, "ether")}  SKEW LIMIT: ${skewImpactLimit}  TRADING ALLOCATION: $${ethers.formatUnits(tradingAllocation, "ether")}`,
   );
 
   return {

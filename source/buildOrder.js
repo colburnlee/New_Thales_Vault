@@ -78,7 +78,7 @@ const buildOrder = async (
       });
     }
   }
-  console.log("built orders: ", builtOrders);
+
   return builtOrders;
 };
 

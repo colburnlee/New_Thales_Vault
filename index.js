@@ -84,7 +84,7 @@ async function doMain() {
     availableAllocationForMarket,
     availableAllocationForRound,
     tradeLog,
-  } = await updateRoundInfo(db, round, roundEndTime, closingDate);
+  } = await updateRoundInfo(db, round, roundEndTime, closingDate, networkId);
   // check db to return funds available to trade and contract addresses of vaults interacted with within same round
   // check network for eligible markets
   const {

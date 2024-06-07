@@ -38,9 +38,9 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
         activeMarkets.length,
       ), // Get price impacts for all active markets.
     ]);
-  console.log(
-    `Found ${activeMarkets.length} markets on ${(networkId = "10" ? "optimism" : "network")}. `,
-  );
+  // console.log(
+  //   `Found ${activeMarkets.length} markets on ${(networkId = "10" ? "optimism" : "network")}. `,
+  // );
 
   return {
     pricesForAllActiveMarkets,

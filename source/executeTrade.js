@@ -14,7 +14,6 @@ const OPclient = createPublicClient({
 }).extend(publicActionsL2());
 
 const executeTrade = async (builtOrders, round, networkId, db) => {
-  const gasPrice = (await etherprovider.getFeeData()).gasPrice;
   const contract = setVariable(networkId);
 
   for (const order of builtOrders) {
@@ -33,8 +32,6 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           (await OPclient.estimateTotalFee({
             account: viemAccount,
           })) / BigInt(1e18);
-
-        console.log(fee);
 
         // Execute trade
         let tx = await contract.buyFromAMM(
@@ -89,7 +86,7 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
         //   .collection("round")
         //   .where("round", "==", round.toString());
         const res = await db.collection("errorLog").add(errorMessage);
-        console.log(`Trade added to db with id: ${res.id}`);
+        console.log(`error added to db with id: ${res.id}`);
       }
     }
   }

@@ -37,9 +37,9 @@ const checkTrades = async (
       marketPrices &&
       marketPriceImpact
     ) {
-      console.log(
-        `Market: ${market.address} Prices: ${marketPrices} PriceImpact: ${marketPriceImpact}  `,
-      );
+      // console.log(
+      //   `Market: ${market.address} Prices: ${marketPrices} PriceImpact: ${marketPriceImpact}  `,
+      // );
       try {
         let priceUP, priceDOWN, buyPriceImpactUP, buyPriceImpactDOWN;
         buyPriceImpactUP = Number(marketPriceImpact.upPriceImpact) / 1e18;
@@ -54,10 +54,10 @@ const checkTrades = async (
           priceUP = Number(marketPrices.upPrice) / Number(1e6);
           priceDOWN = Number(marketPrices.downPrice) / Number(1e6);
         }
-        // console.log(`Market: ${market.address} PriceUP: ${marketPrices.upPrice} vs ${priceUP} PriceDOWN: ${priceDOWN} vs ${marketPrices.downPrice} `)
-        console.log(
-          `checking:  ${priceUP} > ${priceLowerLimit} && ${priceUP} < ${priceUpperLimit} && ${buyPriceImpactUP} < ${skewImpactLimit}`,
-        );
+
+        // console.log(
+        //   `checking:  ${priceUP} > ${priceLowerLimit} && ${priceUP} < ${priceUpperLimit} && ${buyPriceImpactUP} < ${skewImpactLimit}`,
+        // );
         if (
           priceUP > priceLowerLimit &&
           priceUP < priceUpperLimit &&
@@ -91,7 +91,7 @@ const checkTrades = async (
     }
   }
   console.log(
-    `--------------${activeMarkets.length} Markets processed. ${tradingMarkets.length} Eligible -------------------`,
+    `============ MARKETS PROCESSED: ${activeMarkets.length} ELIGIBLE: ${tradingMarkets.length} ==================`,
   );
   return tradingMarkets;
 };
@@ -105,9 +105,6 @@ const checkTrades = async (
  */
 const inTradingWeek = (maturityDate, closingDate) => {
   const now = Date.now(); // Get the current timestamp.
-  console.log(
-    `maturityDate greater than now? ${Number(maturityDate) > Number(now)}. closingDate greater than maturity date? ${Number(maturityDate) < Number(closingDate)}`,
-  ); // Log a message to the console for debugging.
   // Check if the maturity date is after the current time and before the closing date.
   if (
     Number(maturityDate) > Number(now) &&
