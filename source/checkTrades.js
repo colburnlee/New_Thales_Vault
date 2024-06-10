@@ -105,10 +105,12 @@ const checkTrades = async (
  */
 const inTradingWeek = (maturityDate, closingDate) => {
   const now = Date.now(); // Get the current timestamp.
+  const weekFromNow = now + 604800000; // Add 7 days to the current timestamp.
+
   // Check if the maturity date is after the current time and before the closing date.
   if (
     Number(maturityDate) > Number(now) &&
-    Number(maturityDate) < Number(closingDate)
+    Number(maturityDate) < Number(weekFromNow)
   ) {
     return true; // Maturity date is within the trading week.
   }

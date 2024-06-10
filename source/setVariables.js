@@ -1,12 +1,8 @@
 const Vault = require("../contracts/Vault.js");
 // const Vault = require("../contracts/VaultContract.js");
-const { ethers, formatUnits } = require("ethers");
+const { ethers } = require("ethers");
 require("dotenv").config();
 const { wallet, etherprovider, gasPrice } = require("../constants.js");
-const { initializeApp } = require("firebase-admin/app");
-const serviceAccount = require("../firebase.json");
-const { getFirestore } = require("firebase-admin/firestore");
-var admin = require("firebase-admin");
 
 /**
  * This function initializes the Firebase Admin SDK and retrieves relevant data from the blockchain and Firestore.
@@ -14,12 +10,7 @@ var admin = require("firebase-admin");
  * @param {string} network The name of the network to retrieve data for.
  * @returns {Promise<{round: number, roundEndTime: string, closingDate: number, skewImpactLimit: string, db: Firestore}>} An object containing the retrieved data.
  */
-const setVariables = async (network) => {
-  // Initialize the Firebase Admin SDK with the service account credentials.
-  initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-
+const setVariables = async (network, db) => {
   // Create a new ethers.Contract object for interacting with the AMM Vault contract.
   const contract = new ethers.Contract(
     process.env.AMM_VAULT_CONTRACT,
@@ -38,15 +29,12 @@ const setVariables = async (network) => {
 
   // Find the amount of time left in the round by subtracting closingDate from now()
   const timeLeft = closingDate - Date.now();
-  // format timeleft into days hours minutes seconds
-  const timeLeftInDays = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  const timeLeftInHours = Math.floor(
-    (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-  );
-  const timeLeftInMinutes = Math.floor(
-    (timeLeft % (1000 * 60 * 60)) / (1000 * 60),
-  );
-  const timeLeftInSeconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+  const {
+    timeLeftInDays,
+    timeLeftInHours,
+    timeLeftInMinutes,
+    timeLeftInSeconds,
+  } = getTimeLeft(timeLeft);
 
   console.log(
     `============================ ROUND ${round} ============================= `,
@@ -54,9 +42,6 @@ const setVariables = async (network) => {
   console.log(
     `============ TIME REMAINING - DAYS:${timeLeftInDays} HR:${timeLeftInHours} MIN:${timeLeftInMinutes} SEC:${timeLeftInSeconds} ===========`,
   );
-
-  // Get a reference to the Firestore database.
-  const db = getFirestore();
 
   // Query the 'network' collection for the network with the specified name.
   const networkRef = db.collection("network").where("name", "==", network);
@@ -74,28 +59,43 @@ const setVariables = async (network) => {
   const priceUpperLimit = networkData.docs[0].data().priceUpperLimit;
   const priceLowerLimit = networkData.docs[0].data().priceLowerLimit;
   const minTradeAmount = networkData.docs[0].data().minTradeAmount;
-  const tradingAllocation = networkData.docs[0].data().tradingAllocation;
+  // const tradingAllocation = networkData.docs[0].data().tradingAllocation;
 
   // // Get Gas Price
   // const gasPrice = await etherprovider.getGasPrice();
 
   // Log the vault information.
-  console.log(
-    `PRICE RANGE: $${ethers.formatUnits(priceLowerLimit, "ether")} - ${ethers.formatUnits(priceUpperLimit, "ether")}  SKEW LIMIT: ${skewImpactLimit}  TRADING ALLOCATION: $${ethers.formatUnits(tradingAllocation, "ether")}`,
-  );
 
+  console.log(
+    `============ PRICE RANGE: $${ethers.formatUnits(priceLowerLimit, "ether")} - ${ethers.formatUnits(priceUpperLimit, "ether")}  SKEW LIMIT: ${skewImpactLimit} ==============`,
+  );
   return {
     wallet,
     round,
     roundEndTime,
     closingDate,
     skewImpactLimit,
-    db,
     priceUpperLimit,
     priceLowerLimit,
     minTradeAmount,
-    // tradeLogRef,
-    // errorLogRef
+  };
+};
+
+const getTimeLeft = (timeLeft) => {
+  // format timeleft into days hours minutes seconds
+  const timeLeftInDays = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const timeLeftInHours = Math.floor(
+    (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+  );
+  const timeLeftInMinutes = Math.floor(
+    (timeLeft % (1000 * 60 * 60)) / (1000 * 60),
+  );
+  const timeLeftInSeconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+  return {
+    timeLeftInDays,
+    timeLeftInHours,
+    timeLeftInMinutes,
+    timeLeftInSeconds,
   };
 };
 

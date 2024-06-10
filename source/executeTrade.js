@@ -64,8 +64,7 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           .collection("tradeLog")
           .doc(transactionHash ? transactionHash : order.market.address)
           .set(tradeLog);
-        // const res = await db.collection("trades").add(tradeLog);
-        console.log(`Trade added to db with id: ${res.id}`);
+        console.log(`Trade added to tradelog successfully with hash: ${res}`);
       } catch (e) {
         let error = e.reason ? e.reason : e.message;
         let timestamp = new Date().toLocaleString("en-US");
@@ -86,7 +85,7 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
         //   .collection("round")
         //   .where("round", "==", round.toString());
         const res = await db.collection("errorLog").add(errorMessage);
-        console.log(`error added to db with id: ${res.id}`);
+        console.log(`error added to db with hash: ${res.id}`);
       }
     }
   }

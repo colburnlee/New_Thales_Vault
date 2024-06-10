@@ -117,7 +117,7 @@ const tradedOppositeInRound = (tradeLog, market) => {
     // Check if the current trade is for the same market.
     if (tradeLog[key].market === market.address) {
       // Check if the current trade is in the opposite direction.
-      if (market.position != tradeLog[key].position) {
+      if ((market.position > 0 ? "DOWN" : "UP") != tradeLog[key].position) {
         console.log(`Market was traded in a different postion. Skipping...`);
         return true;
       }
@@ -155,14 +155,14 @@ const buildQuote = async (
   );
 
   // Get the available allocation for this market in this round
-  console.log(`Allocation for Round: ${allocation}`);
-  const availableAllocationForRound = Number(BigInt(allocation) / BigInt(1e18));
+  console.log(`Allocation for Round: ${ethers.formatUnits(allocation)}`);
+  const availableAllocationForRound = BigInt(allocation) / BigInt(1e18);
   let availableAllocationForMarket;
   if (tradedInRoundAlready) {
     availableAllocationForMarket = GetAllocationForTradedInRound(
       tradeLog,
       market,
-      availableAllocationForRound,
+      allocation,
     );
   } else {
     availableAllocationForMarket = Number(availableAllocationForRound * 0.05);
@@ -178,6 +178,9 @@ const buildQuote = async (
     amount < minTradeAmount ||
     maxAmmAmount == 0
   ) {
+    console.log(
+      `AMM amount available to buy (${maxAmmAmount}) is too small OR the quoted amount (${amount}) is below the minimum of (${minTradeAmount})`,
+    );
     return { amount: 0, quote: 0, position: market.position };
   }
   while (amount < maxAmmAmount) {
@@ -289,22 +292,30 @@ const GetAllocationForTradedInRound = (
       market.position > 0 ? "DOWN" : "UP"
     } Market`,
   );
-  let remainingAllocation = availableAllocationForRound;
+  const allocationForMarket = BigInt(availableAllocationForRound * 0.05);
+
   // Iterate through the trade log to find trades related to the given market
   for (const key in tradeLog) {
     if (tradeLog[key].market === market.address) {
-      let amount = Number(tradeLog[key].amount);
-      let price = Number(tradeLog[key].price);
+      let quote = BigInt(tradeLog[key].quote);
       // Subtract the cost of each trade from the remaining allocation
-      remainingAllocation = remainingAllocation - amount * price;
+      console.log(
+        `subtracting market allocation: ${ethers.formatUnits(allocationForMarket, "ether")} from quote: ${ethers.formatUnits(quote, "ether")}`,
+      );
+      let remainingAllocation = ethers.formatUnits(
+        allocationForMarket - quote,
+        "ether",
+      );
+      console.log(
+        `Remaining allocation for ${market.currencyKey} ${
+          market.position > 0 ? "DOWN" : "UP"
+        }: ${remainingAllocation}`,
+      );
+      return Number(remainingAllocation);
     }
   }
-  console.log(
-    `Remaining allocation for ${market.currencyKey} ${
-      market.position > 0 ? "DOWN" : "UP"
-    }: ${remainingAllocation}`,
-  );
-  return remainingAllocation;
+  console.log("returning zero");
+  return 0;
 };
 
 module.exports = { buildOrder };

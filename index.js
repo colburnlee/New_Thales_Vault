@@ -9,6 +9,10 @@ const {
 const { checkTrades } = require("./source/checkTrades");
 const { buildOrder } = require("./source/buildOrder");
 const { executeTrade } = require("./source/executeTrade");
+const { initializeApp } = require("firebase-admin/app");
+const serviceAccount = require("./firebase.json");
+const { getFirestore } = require("firebase-admin/firestore");
+var admin = require("firebase-admin");
 
 async function doLoop() {
   while (true) {
@@ -60,6 +64,14 @@ function delay(time) {
   });
 }
 
+// Initialize the Firebase Admin SDK with the service account credentials.
+initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+// Get a reference to the Firestore database.
+const db = getFirestore();
+
 async function doMain() {
   console.log(
     "==================== START PROCESSING OP VAULT ====================",
@@ -74,18 +86,22 @@ async function doMain() {
     roundEndTime,
     closingDate,
     skewImpactLimit,
-    db,
     priceUpperLimit,
     priceLowerLimit,
     minTradeAmount,
-  } = await setVariables("optimism");
+  } = await setVariables("optimism", db);
   // Get trade log from db. Update db with current round info
   const {
     availableAllocationForMarket,
     availableAllocationForRound,
     tradeLog,
+    totalTraded,
   } = await updateRoundInfo(db, round, roundEndTime, closingDate, networkId);
-  // check db to return funds available to trade and contract addresses of vaults interacted with within same round
+
+  if (BigInt(totalTraded) >= BigInt(availableAllocationForRound)) {
+    console.log("No more available funds for this round");
+    return;
+  }
   // check network for eligible markets
   const {
     pricesForAllActiveMarkets,
@@ -125,8 +141,8 @@ async function doMain() {
     tradeLog,
   );
   console.log(
-    "++++++++++++++++++++ END PROCESSING OP VAULT ++++++++++++++++++++",
+    "===================== END PROCESSING OP VAULT =====================",
   );
 }
 
-doMain();
+doLoop();

@@ -1,3 +1,5 @@
+const { formatUnits } = require("ethers");
+
 const updateRoundInfo = async (
   db,
   round,
@@ -23,11 +25,23 @@ const updateRoundInfo = async (
   const roundInfo = roundInfoRef.data();
   const availableAllocationForMarket = roundInfo.availableAllocationForMarket;
   const availableAllocationForRound = roundInfo.availableAllocationForRound;
+  const totalTraded = roundInfo.totalTradedOP;
+
+  // review tradelog to find amount traded and updates in db if needed
+  await updateTotalTraded(tradeLog, networkId, BigInt(totalTraded), round, db);
+
+  console.log(
+    `========== TRADED IN ROUND ${round}: $${formatUnits(totalTraded, "ether")} ALLOCATION: $${formatUnits(
+      availableAllocationForRound,
+      "ether",
+    )} ==========`,
+  );
   return {
     availableAllocationForMarket,
     availableAllocationForRound,
     tradeLog,
     errorLog,
+    totalTraded,
   };
 };
 
@@ -85,6 +99,30 @@ const createNewEntry = async (
   const setData = async (data) => await ref.set(data);
   // Set the data in the database
   await setData(data);
+};
+
+const updateTotalTraded = async (
+  tradeLog,
+  networkId,
+  totalTraded,
+  round,
+  db,
+) => {
+  let total = BigInt(0);
+  for (const key in tradeLog) {
+    if (tradeLog[key].network == networkId) {
+      total += BigInt(tradeLog[key].quote);
+    }
+  }
+  console.log(
+    `comparing total traded: ${total} to totalTraded: ${totalTraded}`,
+  );
+  if (total != totalTraded) {
+    const res = await db.collection("round").doc(round.toString()).update({totalTradedOP: total.toString()});
+    console.log(
+      `++++++++++ Total traded updated to: $${formatUnits(totalTraded)} ++++++++++`,
+    );
+  }
 };
 
 module.exports = {
