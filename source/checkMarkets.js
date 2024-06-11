@@ -9,6 +9,9 @@ const thalesData = require("thales-data");
 const ethers = require("ethers");
 
 const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
+  console.log(
+    "===================== FINDING ACTIVE MARKETS =====================",
+  );
   let minMaturityValue = parseInt(new Date().getTime() / 1000);
   let activeMarkets = await thalesData.binaryOptions.markets({
     max: Infinity,
@@ -38,9 +41,9 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
         activeMarkets.length,
       ), // Get price impacts for all active markets.
     ]);
-  // console.log(
-  //   `Found ${activeMarkets.length} markets on ${(networkId = "10" ? "optimism" : "network")}. `,
-  // );
+  console.log(
+    `===================== FOUND ${activeMarkets.length} MARKETS =====================. `,
+  );
 
   return {
     pricesForAllActiveMarkets,

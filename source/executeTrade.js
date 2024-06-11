@@ -64,7 +64,9 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           .collection("tradeLog")
           .doc(transactionHash ? transactionHash : order.market.address)
           .set(tradeLog);
-        console.log(`Trade added to tradelog successfully with hash: ${res}`);
+        console.log(
+          `Trade added to tradelog successfully with hash: ${res.toString()}`,
+        );
       } catch (e) {
         let error = e.reason ? e.reason : e.message;
         let timestamp = new Date().toLocaleString("en-US");

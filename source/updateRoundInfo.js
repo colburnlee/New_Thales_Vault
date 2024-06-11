@@ -19,19 +19,35 @@ const updateRoundInfo = async (
   const tradeLog = tradeLogRef.docs.map((doc) => doc.data());
   const errorLog = errorLogRef.docs.map((doc) => doc.data());
   // if roundInfoRef is not found, create new document
+  let roundInfo;
   if (!roundInfoRef.exists) {
-    await createNewEntry(db, round, roundEndTime, closingDate, networkId);
+    roundInfo = await createNewEntry(
+      db,
+      round,
+      roundEndTime,
+      closingDate,
+      networkId,
+    );
+  } else {
+    roundInfo = roundInfoRef.data();
   }
-  const roundInfo = roundInfoRef.data();
+
   const availableAllocationForMarket = roundInfo.availableAllocationForMarket;
   const availableAllocationForRound = roundInfo.availableAllocationForRound;
-  const totalTraded = roundInfo.totalTradedOP;
+  let totalTraded = roundInfo.totalTradedOP;
 
   // review tradelog to find amount traded and updates in db if needed
-  await updateTotalTraded(tradeLog, networkId, BigInt(totalTraded), round, db);
+  const updatedTraded = await updateTotalTraded(
+    tradeLog,
+    networkId,
+    BigInt(totalTraded),
+    round,
+    db,
+  );
+  totalTraded = updatedTraded;
 
   console.log(
-    `========== TRADED IN ROUND ${round}: $${formatUnits(totalTraded, "ether")} ALLOCATION: $${formatUnits(
+    `========== TRADED IN ROUND ${round}: $${Number(formatUnits(totalTraded, "ether")).toFixed(2)} ALLOCATION: $${formatUnits(
       availableAllocationForRound,
       "ether",
     )} ==========`,
@@ -62,11 +78,9 @@ const createNewEntry = async (
 ) => {
   console.log(`creating a new database entry for round ${round}`);
   // Prepare the data to be stored in the database
-  const networkAllocationRef = db
-    .collection("network")
-    .where("name", "==", networkId);
-  const networkAllocation =
-    networkAllocationRef.docs[0].data().tradingAllocation;
+  const networkRef = db.collection("network").doc(networkId.toString());
+  const networkData = await networkRef.get();
+  const networkAllocation = networkData.data().tradingAllocation;
   if (networkAllocation === undefined) {
     let error = "Network allocation not found";
     let timestamp = new Date().toLocaleString("en-US");
@@ -92,6 +106,7 @@ const createNewEntry = async (
     round: round.toString(), // Convert to string for database storage
     availableAllocationForMarket: {}, // Initialize an empty object for market allocations
     availableAllocationForRound: networkAllocation, // $100 initial allocation for the round
+    totalTradedOP: "0",
   };
   // Get a reference to the document for this round in the "round" collection
   const ref = db.collection("round").doc(round.toString());
@@ -114,15 +129,19 @@ const updateTotalTraded = async (
       total += BigInt(tradeLog[key].quote);
     }
   }
-  console.log(
-    `comparing total traded: ${total} to totalTraded: ${totalTraded}`,
-  );
+  // console.log(
+  //   `comparing total traded: ${total} to totalTraded: ${totalTraded}`,
+  // );
   if (total != totalTraded) {
-    const res = await db.collection("round").doc(round.toString()).update({totalTradedOP: total.toString()});
+    const res = await db
+      .collection("round")
+      .doc(round.toString())
+      .update({ totalTradedOP: total.toString() });
     console.log(
       `++++++++++ Total traded updated to: $${formatUnits(totalTraded)} ++++++++++`,
     );
   }
+  return total;
 };
 
 module.exports = {

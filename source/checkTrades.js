@@ -21,6 +21,7 @@ const checkTrades = async (
   priceLowerLimit,
   closingDate,
 ) => {
+  console.log("===================== PROCESSING MARKETS =====================");
   // Initialize an empty array to store trading markets.
   let tradingMarkets = [];
   for (const market of activeMarkets) {

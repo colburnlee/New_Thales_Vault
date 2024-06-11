@@ -165,7 +165,7 @@ const buildQuote = async (
       allocation,
     );
   } else {
-    availableAllocationForMarket = Number(availableAllocationForRound * 0.05);
+    availableAllocationForMarket = Number(availableAllocationForRound) * 0.05;
     console.log(
       `No previous trades. Authorized amount is $${availableAllocationForMarket.toFixed(2)}`,
     );
@@ -299,9 +299,9 @@ const GetAllocationForTradedInRound = (
     if (tradeLog[key].market === market.address) {
       let quote = BigInt(tradeLog[key].quote);
       // Subtract the cost of each trade from the remaining allocation
-      console.log(
-        `subtracting market allocation: ${ethers.formatUnits(allocationForMarket, "ether")} from quote: ${ethers.formatUnits(quote, "ether")}`,
-      );
+      // console.log(
+      //   `subtracting market allocation: ${ethers.formatUnits(allocationForMarket, "ether")} from quote: ${ethers.formatUnits(quote, "ether")}`,
+      // );
       let remainingAllocation = ethers.formatUnits(
         allocationForMarket - quote,
         "ether",
