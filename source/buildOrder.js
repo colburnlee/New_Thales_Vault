@@ -38,9 +38,9 @@ const buildOrder = async (
     let quote;
 
     console.log(
-      `--------------------Processing ${market.currencyKey} ${
+      `------------ Processing ${market.currencyKey} ${
         market.position > 0 ? "DOWN" : "UP"
-      } at ${market.address}-------------------`,
+      } at ${market.address} -----------`,
     );
 
     // Check if this market has already been traded in this round. Returns true or false.
@@ -49,12 +49,6 @@ const buildOrder = async (
       const ineligibleTrade = tradedOppositeInRound(tradeLog, market);
       if (ineligibleTrade) {
         continue;
-      } else {
-        console.log(
-          `${market.currencyKey} ${
-            market.position > 0 ? "DOWN" : "UP"
-          } Market is eligible to trade.`,
-        );
       }
     }
     quote = await buildQuote(
@@ -94,9 +88,6 @@ const tradedInRound = (tradeLog, market) => {
   for (const key in tradeLog) {
     // Check if the current trade is for the same market.
     if (tradeLog[key].market === market.address) {
-      console.log(
-        `Market ${market.address} has already been traded in this round.`,
-      );
       return true;
     }
   }
@@ -287,11 +278,11 @@ const GetAllocationForTradedInRound = (
   market, // The market object for which to calculate remaining allocation
   availableAllocationForRound, // The total allocation available for the round
 ) => {
-  console.log(
-    `Finding the remaining allocation for ${market.currencyKey} ${
-      market.position > 0 ? "DOWN" : "UP"
-    } Market`,
-  );
+  // console.log(
+  //   `Finding the remaining allocation for ${market.currencyKey} ${
+  //     market.position > 0 ? "DOWN" : "UP"
+  //   } Market`,
+  // );
   const allocationForMarket = BigInt(availableAllocationForRound * 0.05);
 
   // Iterate through the trade log to find trades related to the given market

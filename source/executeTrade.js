@@ -47,7 +47,6 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
         let reciept = await tx.wait(2);
         let transactionHash = reciept.hash;
         let timestamp = new Date().toLocaleString("en-US");
-        console.log(`Transaction hash: ${transactionHash}`);
         let tradeLog = {
           network: networkId,
           round: round.toString(),
@@ -65,7 +64,7 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           .doc(transactionHash ? transactionHash : order.market.address)
           .set(tradeLog);
         console.log(
-          `Trade added to tradelog successfully with hash: ${res.toString()}`,
+          `Trade added to tradelog successfully with hash: ${transactionHash}`,
         );
       } catch (e) {
         let error = e.reason ? e.reason : e.message;
