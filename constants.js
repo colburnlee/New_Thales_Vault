@@ -1,4 +1,4 @@
-const { ethers, JsonRpcProvider, getGasPrice } = require("ethers");
+const { ethers, JsonRpcProvider } = require("ethers");
 const { privateKeyToAccount } = require("viem/accounts");
 require("dotenv").config();
 const privateKey = process.env.PRIVATE_KEY;

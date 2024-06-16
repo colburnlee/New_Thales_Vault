@@ -146,7 +146,7 @@ const buildQuote = async (
   );
 
   // Get the available allocation for this market in this round
-  console.log(`Allocation for Round: ${ethers.formatUnits(allocation)}`);
+  // console.log(`Allocation for Round: ${ethers.formatUnits(allocation)}`);
   const availableAllocationForRound = BigInt(allocation) / BigInt(1e18);
   let availableAllocationForMarket;
   if (tradedInRoundAlready) {
