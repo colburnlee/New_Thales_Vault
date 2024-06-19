@@ -18,7 +18,6 @@ const thalesAMMContract = new ethers.Contract(
  * @param {number} round - Current round number.
  * @param {string} networkId - Network ID of the blockchain.
  * @param {number} minTradeAmount - Minimum trade amount.
- * @param {number} tradingAllocationForMarket - Trading allocation for the market.
  * @param {number} availableAllocationForRound - Available allocation for the round.
  * @returns {Object[]} An array of built orders.
  */
@@ -30,7 +29,7 @@ const buildOrder = async (
   networkId,
   minTradeAmount,
   tradingAllocationForRound,
-  tradingAllocationForMarket,
+  db
 ) => {
   let builtOrders = [];
   for (const key in eligibleMarkets) {
@@ -42,6 +41,14 @@ const buildOrder = async (
         market.position > 0 ? "DOWN" : "UP"
       } at ${market.address} -----------`,
     );
+    let { previousTradeTotal, previousTradeDirection } = await getPreviousTradeAmount(db, market.address)
+    console.log(`TEST: previousTradeTotal: ${previousTradeTotal}, previousTradeDirection: ${previousTradeDirection}`)
+    if (previousTradeTotal > 0) {
+      console.log("TEST: previous trade found")
+      if (previousTradeDirection != market.position ) {
+      console.log("TEST: previous trade direction does not match current position")
+      continue}
+    }
 
     // Check if this market has already been traded in this round. Returns true or false.
     const tradedInRoundAlready = tradedInRound(tradeLog, market);
@@ -274,7 +281,7 @@ const buildQuote = async (
 
 // Calculates the remaining allocation for a given market in a round, considering previous trades.
 const GetAllocationForTradedInRound = (
-  tradeLog, // Log of trades that have occurred in the round
+  tradeLog, // Log of trades that have occurred
   market, // The market object for which to calculate remaining allocation
   availableAllocationForRound, // The total allocation available for the round
 ) => {
@@ -308,6 +315,30 @@ const GetAllocationForTradedInRound = (
   console.log("returning zero");
   return 0;
 };
+
+const getPreviousTradeAmount = async (
+  db, // database reference
+  market, // The market object for which to calculate remaining allocation
+) => {
+  const tradeLog = await db
+    .collection("tradeLog").where("market" , "==", market).get()
+    .then((querySnapshot) => {
+      const tradeLog = querySnapshot.docs.map((doc) => doc.data());
+      return tradeLog
+    })
+    .catch((error) => {
+      console.log("No documents exist:  ", error);
+      return 0n
+    });
+    let previousTradeTotal = 0n
+    let previousTradeDirection
+    for (const key in tradeLog) {
+      previousTradeTotal += BigInt(tradeLog[key].quote)
+      previousTradeDirection = tradeLog[key].position == "UP" ? 0 : 1
+    } 
+    // console.log(`previousTradeTotal: ${previousTradeTotal} trade Direction: ${previousTradeDirection}`)
+    return { previousTradeTotal, previousTradeDirection }
+}
 
 module.exports = { buildOrder };
 

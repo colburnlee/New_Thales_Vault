@@ -32,7 +32,6 @@ const updateRoundInfo = async (
     roundInfo = roundInfoRef.data();
   }
 
-  const availableAllocationForMarket = roundInfo.availableAllocationForMarket;
   const availableAllocationForRound = roundInfo.availableAllocationForRound;
   let totalTraded = roundInfo.totalTradedOP;
 
@@ -53,7 +52,6 @@ const updateRoundInfo = async (
     )} ==========`,
   );
   return {
-    availableAllocationForMarket,
     availableAllocationForRound,
     tradeLog,
     errorLog,
@@ -104,8 +102,7 @@ const createNewEntry = async (
     roundEndTime: roundEndTime.toString(), // Convert to string for database storage
     closingDate: closingDate.toString(), // Convert to string for database storage
     round: round.toString(), // Convert to string for database storage
-    availableAllocationForMarket: {}, // Initialize an empty object for market allocations
-    availableAllocationForRound: networkAllocation, // $100 initial allocation for the round
+    availableAllocationForRound: networkAllocation, // initial allocation for the round
     totalTradedOP: "0",
   };
   // Get a reference to the document for this round in the "round" collection

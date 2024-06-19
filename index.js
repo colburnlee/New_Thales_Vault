@@ -89,16 +89,16 @@ async function doMain() {
     priceUpperLimit,
     priceLowerLimit,
     minTradeAmount,
+    usdLeft
   } = await setVariables("optimism", db);
   // Get trade log from db. Update db with current round info
   const {
-    availableAllocationForMarket,
     availableAllocationForRound,
     tradeLog,
     totalTraded,
   } = await updateRoundInfo(db, round, roundEndTime, closingDate, networkId);
 
-  if (BigInt(totalTraded) >= BigInt(availableAllocationForRound)) {
+  if (usdLeft < minTradeAmount) {
     console.log("No more available funds for this round");
     return;
   }
@@ -130,15 +130,14 @@ async function doMain() {
     +networkId,
     minTradeAmount,
     availableAllocationForRound,
-    availableAllocationForMarket,
+    db
   );
 
   const executedTrades = await executeTrade(
     builtOrders,
     round,
     networkId,
-    db,
-    tradeLog,
+    db
   );
   console.log(
     "===================== END PROCESSING OP VAULT =====================",
