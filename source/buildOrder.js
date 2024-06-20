@@ -2,7 +2,6 @@ require("dotenv").config();
 const { ethers } = require("ethers");
 const { wallet } = require("../constants");
 const { thalesAMMContract: abi } = require("../contracts/ThalesAMM");
-const w3utils = require("web3-utils");
 const thalesAMMContract = new ethers.Contract(
   process.env.THALES_AMM_CONTRACT,
   abi.abi,
@@ -29,35 +28,32 @@ const buildOrder = async (
   networkId,
   minTradeAmount,
   tradingAllocationForRound,
-  db
+  db,
 ) => {
   let builtOrders = [];
   for (const key in eligibleMarkets) {
     let market = eligibleMarkets[key];
     let quote;
+    let tradedInRoundAlready = false;
 
     console.log(
       `------------ Processing ${market.currencyKey} ${
         market.position > 0 ? "DOWN" : "UP"
       } at ${market.address} -----------`,
     );
-    let { previousTradeTotal, previousTradeDirection } = await getPreviousTradeAmount(db, market.address)
-    console.log(`TEST: previousTradeTotal: ${previousTradeTotal}, previousTradeDirection: ${previousTradeDirection}`)
+    let { previousTradeTotal, previousTradeDirection } =
+      await getPreviousTradeAmount(db, market.address);
     if (previousTradeTotal > 0) {
-      console.log("TEST: previous trade found")
-      if (previousTradeDirection != market.position ) {
-      console.log("TEST: previous trade direction does not match current position")
-      continue}
-    }
-
-    // Check if this market has already been traded in this round. Returns true or false.
-    const tradedInRoundAlready = tradedInRound(tradeLog, market);
-    if (tradedInRoundAlready) {
-      const ineligibleTrade = tradedOppositeInRound(tradeLog, market);
-      if (ineligibleTrade) {
+      console.log("PREVIOUSLY TRADED");
+      tradedInRoundAlready = true;
+      if (previousTradeDirection != market.position) {
+        console.log(
+          `Previous trade was in the opposite direction. Skipping...`,
+        );
         continue;
       }
     }
+
     quote = await buildQuote(
       market,
       round,
@@ -67,6 +63,7 @@ const buildOrder = async (
       tradingAllocationForRound,
       tradedInRoundAlready,
       tradeLog,
+      previousTradeTotal,
     );
     if (quote.amount > 0) {
       // market example 1: eligible Market:  {  address: '0xfb227a2cdc11435bd5684ca2ec4426ebbeb5ed12', position: 0, currencyKey: 'SNX', price: 0.8115908079637828 }
@@ -83,48 +80,6 @@ const buildOrder = async (
   return builtOrders;
 };
 
-/**
- * Checks if a market has been traded in the current round.
- *
- * @param {Object} tradeLog - A record of trades made in the current round.
- * @param {Object} market - The market to check.
- * @returns {boolean} True if the market has been traded, false otherwise.
- */
-const tradedInRound = (tradeLog, market) => {
-  // Iterate through the trade log.
-  for (const key in tradeLog) {
-    // Check if the current trade is for the same market.
-    if (tradeLog[key].market === market.address) {
-      return true;
-    }
-  }
-  // The market has not been traded in this round.
-  return false;
-};
-
-/**
- * Checks if a market has been traded in the opposite direction in the current round.
- *
- * @param {Object} tradeLog - A record of trades made in the current round.
- * @param {Object} market - The market to check.
- * @returns {boolean} True if the market has been traded in the opposite direction, false otherwise.
- */
-const tradedOppositeInRound = (tradeLog, market) => {
-  // Iterate through the trade log.
-  for (const key in tradeLog) {
-    // Check if the current trade is for the same market.
-    if (tradeLog[key].market === market.address) {
-      // Check if the current trade is in the opposite direction.
-      if ((market.position > 0 ? "DOWN" : "UP") != tradeLog[key].position) {
-        console.log(`Market was traded in a different postion. Skipping...`);
-        return true;
-      }
-    }
-  }
-  // The market has not been traded in the opposite direction.
-  return false;
-};
-
 const buildQuote = async (
   market, // Market object containing details about the market to trade
   round, // Current round number
@@ -134,6 +89,7 @@ const buildQuote = async (
   allocation, // Total allocation for the round
   tradedInRoundAlready, // Flag indicating if the market has been traded in this round
   tradeLog, // Trade log for the round
+  previousTradeTotal, // Previous trade total
 ) => {
   const minTradeAmount = 3;
   let finalAmount = 0,
@@ -157,10 +113,12 @@ const buildQuote = async (
   const availableAllocationForRound = BigInt(allocation) / BigInt(1e18);
   let availableAllocationForMarket;
   if (tradedInRoundAlready) {
-    availableAllocationForMarket = GetAllocationForTradedInRound(
-      tradeLog,
-      market,
-      allocation,
+    availableAllocationForMarket = ethers.formatUnits(
+      BigInt(allocation) / BigInt(20) - BigInt(previousTradeTotal),
+      "ether",
+    );
+    console.log(
+      `Remaining allocation for ${market.currencyKey} ${market.position > 0 ? "DOWN" : "UP"}: ${availableAllocationForMarket}`,
     );
   } else {
     availableAllocationForMarket = Number(availableAllocationForRound) * 0.05;
@@ -187,7 +145,7 @@ const buildQuote = async (
         await thalesAMMContract.buyPriceImpact(
           market.address,
           market.position,
-          w3utils.toWei(amount, "ether"),
+          ethers.formatUnits(amount, "ether"),
         ),
       ) / 1e18;
     console.log(
@@ -213,14 +171,14 @@ const buildQuote = async (
 
   // Get the quote for the amount of tokens to buy. If the quote is over the max allocation, then reduce the amount to buy
   console.log(
-    `attempting to buy: ${w3utils.toWei(amount, "ether")} ${market.position} ${market.address}`,
+    `attempting to buy: ${ethers.formatUnits(amount, "ether")} ${market.position} ${market.address}`,
   );
   quote =
     Number(
       await thalesAMMContract.buyFromAmmQuote(
         market.address,
         market.position,
-        w3utils.toWei(amount, "ether"),
+        ethers.formatUnits(amount, "ether"),
       ),
     ) / 1e18;
   console.log(
@@ -248,7 +206,7 @@ const buildQuote = async (
         await thalesAMMContract.buyFromAmmQuote(
           market.address,
           market.position,
-          w3utils.toWei(amount, "ether"),
+          ethers.formatUnits(amount, "ether"),
         ),
       ) / 1e18;
     console.log(
@@ -264,7 +222,7 @@ const buildQuote = async (
       await thalesAMMContract.buyFromAmmQuote(
         market.address,
         market.position,
-        w3utils.toWei(amount, "ether"),
+        ethers.formatUnits(amount, "ether"),
       ),
     ) / 1e18;
   console.log("final quote: ", finalQuote);
@@ -321,24 +279,26 @@ const getPreviousTradeAmount = async (
   market, // The market object for which to calculate remaining allocation
 ) => {
   const tradeLog = await db
-    .collection("tradeLog").where("market" , "==", market).get()
+    .collection("tradeLog")
+    .where("market", "==", market)
+    .get()
     .then((querySnapshot) => {
       const tradeLog = querySnapshot.docs.map((doc) => doc.data());
-      return tradeLog
+      return tradeLog;
     })
     .catch((error) => {
       console.log("No documents exist:  ", error);
-      return 0n
+      return 0n;
     });
-    let previousTradeTotal = 0n
-    let previousTradeDirection
-    for (const key in tradeLog) {
-      previousTradeTotal += BigInt(tradeLog[key].quote)
-      previousTradeDirection = tradeLog[key].position == "UP" ? 0 : 1
-    } 
-    // console.log(`previousTradeTotal: ${previousTradeTotal} trade Direction: ${previousTradeDirection}`)
-    return { previousTradeTotal, previousTradeDirection }
-}
+  let previousTradeTotal = 0n;
+  let previousTradeDirection;
+  for (const key in tradeLog) {
+    previousTradeTotal += BigInt(tradeLog[key].quote);
+    previousTradeDirection = tradeLog[key].position == "UP" ? 0 : 1;
+  }
+  // console.log(`previousTradeTotal: ${previousTradeTotal} trade Direction: ${previousTradeDirection}`)
+  return { previousTradeTotal, previousTradeDirection };
+};
 
 module.exports = { buildOrder };
 

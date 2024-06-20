@@ -3,9 +3,7 @@ const Vault = require("../contracts/Vault.js");
 const { ethers } = require("ethers");
 require("dotenv").config();
 const { wallet, etherprovider, gasPrice } = require("../constants.js");
-const { 
-  erc20Contract
-} = require("../contracts/erc20");
+const { erc20Contract } = require("../contracts/erc20");
 
 /**
  * This function initializes the Firebase Admin SDK and retrieves relevant data from the blockchain and Firestore.
@@ -64,13 +62,13 @@ const setVariables = async (network, db) => {
   const minTradeAmount = networkData.docs[0].data().minTradeAmount;
   // const tradingAllocation = networkData.docs[0].data().tradingAllocation;
 
-    // get ethers wallet for optimism
-    const susd = new ethers.Contract(
-      process.env.OP_SUSD_CONTRACT,
-      erc20Contract.abi,
-      wallet
-    );
-  const usdLeft = await susd.balanceOf(wallet.address)
+  // get ethers wallet for optimism
+  const susd = new ethers.Contract(
+    process.env.OP_SUSD_CONTRACT,
+    erc20Contract.abi,
+    wallet,
+  );
+  const usdLeft = await susd.balanceOf(wallet.address);
 
   console.log(
     `============ PRICE RANGE: $${ethers.formatUnits(priceLowerLimit, "ether")} - ${ethers.formatUnits(priceUpperLimit, "ether")}  SKEW LIMIT: ${skewImpactLimit} ==============`,
@@ -84,7 +82,7 @@ const setVariables = async (network, db) => {
     priceUpperLimit,
     priceLowerLimit,
     minTradeAmount,
-    usdLeft
+    usdLeft,
   };
 };
 

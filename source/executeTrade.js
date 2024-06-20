@@ -57,6 +57,8 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           quote: w3utils.toWei(order.quote, "ether"),
           timestamp: timestamp,
           transactionHash: transactionHash,
+          resolved: false,
+          result: "",
         };
         // append to db
         const res = await db
