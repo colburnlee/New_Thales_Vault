@@ -92,7 +92,9 @@ async function doMain() {
     usdLeft,
   } = await setVariables("optimism", db);
   // Get trade log from db. Update db with current round info
-  const { availableAllocationForRound, tradeLog, totalTraded } =
+  const {
+    availableAllocationForRound,
+  } = // tradeLog, totalTraded
     await updateRoundInfo(db, round, roundEndTime, closingDate, networkId);
 
   if (usdLeft < minTradeAmount) {
@@ -121,7 +123,7 @@ async function doMain() {
   // build and submit orders
   const builtOrders = await buildOrder(
     eligibleMarkets,
-    tradeLog,
+    // tradeLog,
     skewImpactLimit,
     round,
     +networkId,

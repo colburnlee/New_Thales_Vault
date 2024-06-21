@@ -22,7 +22,7 @@ const thalesAMMContract = new ethers.Contract(
  */
 const buildOrder = async (
   eligibleMarkets,
-  tradeLog,
+  // tradeLog,
   skewImpactLimit,
   round,
   networkId,
@@ -62,7 +62,7 @@ const buildOrder = async (
       networkId,
       tradingAllocationForRound,
       tradedInRoundAlready,
-      tradeLog,
+      // tradeLog,
       previousTradeTotal,
     );
     if (quote.amount > 0) {
@@ -88,7 +88,7 @@ const buildQuote = async (
   networkId, // Network ID of the blockchain
   allocation, // Total allocation for the round
   tradedInRoundAlready, // Flag indicating if the market has been traded in this round
-  tradeLog, // Trade log for the round
+  // tradeLog, // Trade log for the round
   previousTradeTotal, // Previous trade total
 ) => {
   const minTradeAmount = 3;
@@ -123,12 +123,16 @@ const buildQuote = async (
   } else {
     availableAllocationForMarket = Number(availableAllocationForRound) * 0.05;
     console.log(
-      `No previous trades. Authorized amount is $${availableAllocationForMarket.toFixed(2)}`,
+      `Authorized amount is $${availableAllocationForMarket.toFixed(2)}`,
     );
   }
 
   const maxAllocationAmount = availableAllocationForMarket / market.price; // this is a cieling value, as it would a trade with zero slippage
   let amount = Math.round(maxAllocationAmount);
+  console.log(
+    `Max AMM Amount: ${maxAmmAmount}, Available Allocation: ${availableAllocationForMarket}, Market Price ${market.price}, amount: ${amount}`,
+  );
+
   if (
     maxAmmAmount < minTradeAmount ||
     amount < minTradeAmount ||
@@ -145,7 +149,7 @@ const buildQuote = async (
         await thalesAMMContract.buyPriceImpact(
           market.address,
           market.position,
-          ethers.formatUnits(amount, "ether"),
+          ethers.parseUnits(amount.toString(), "ether"),
         ),
       ) / 1e18;
     console.log(
@@ -178,7 +182,7 @@ const buildQuote = async (
       await thalesAMMContract.buyFromAmmQuote(
         market.address,
         market.position,
-        ethers.formatUnits(amount, "ether"),
+        ethers.parseUnits(amount.toString(), "ether"),
       ),
     ) / 1e18;
   console.log(
@@ -206,7 +210,7 @@ const buildQuote = async (
         await thalesAMMContract.buyFromAmmQuote(
           market.address,
           market.position,
-          ethers.formatUnits(amount, "ether"),
+          ethers.parseUnits(amount.toString(), "ether"),
         ),
       ) / 1e18;
     console.log(
@@ -222,7 +226,7 @@ const buildQuote = async (
       await thalesAMMContract.buyFromAmmQuote(
         market.address,
         market.position,
-        ethers.formatUnits(amount, "ether"),
+        ethers.parseUnits(amount.toString(), "ether"),
       ),
     ) / 1e18;
   console.log("final quote: ", finalQuote);
@@ -235,43 +239,6 @@ const buildQuote = async (
     position: market.position,
     market: market,
   };
-};
-
-// Calculates the remaining allocation for a given market in a round, considering previous trades.
-const GetAllocationForTradedInRound = (
-  tradeLog, // Log of trades that have occurred
-  market, // The market object for which to calculate remaining allocation
-  availableAllocationForRound, // The total allocation available for the round
-) => {
-  // console.log(
-  //   `Finding the remaining allocation for ${market.currencyKey} ${
-  //     market.position > 0 ? "DOWN" : "UP"
-  //   } Market`,
-  // );
-  const allocationForMarket = BigInt(availableAllocationForRound * 0.05);
-
-  // Iterate through the trade log to find trades related to the given market
-  for (const key in tradeLog) {
-    if (tradeLog[key].market === market.address) {
-      let quote = BigInt(tradeLog[key].quote);
-      // Subtract the cost of each trade from the remaining allocation
-      // console.log(
-      //   `subtracting market allocation: ${ethers.formatUnits(allocationForMarket, "ether")} from quote: ${ethers.formatUnits(quote, "ether")}`,
-      // );
-      let remainingAllocation = ethers.formatUnits(
-        allocationForMarket - quote,
-        "ether",
-      );
-      console.log(
-        `Remaining allocation for ${market.currencyKey} ${
-          market.position > 0 ? "DOWN" : "UP"
-        }: ${remainingAllocation}`,
-      );
-      return Number(remainingAllocation);
-    }
-  }
-  console.log("returning zero");
-  return 0;
 };
 
 const getPreviousTradeAmount = async (
@@ -316,3 +283,40 @@ module.exports = { buildOrder };
 //     }
 //   }
 // ]
+
+// Calculates the remaining allocation for a given market in a round, considering previous trades.
+// const GetAllocationForTradedInRound = (
+//   tradeLog, // Log of trades that have occurred
+//   market, // The market object for which to calculate remaining allocation
+//   availableAllocationForRound, // The total allocation available for the round
+// ) => {
+//   // console.log(
+//   //   `Finding the remaining allocation for ${market.currencyKey} ${
+//   //     market.position > 0 ? "DOWN" : "UP"
+//   //   } Market`,
+//   // );
+//   const allocationForMarket = BigInt(availableAllocationForRound * 0.05);
+
+//   // Iterate through the trade log to find trades related to the given market
+//   for (const key in tradeLog) {
+//     if (tradeLog[key].market === market.address) {
+//       let quote = BigInt(tradeLog[key].quote);
+//       // Subtract the cost of each trade from the remaining allocation
+//       // console.log(
+//       //   `subtracting market allocation: ${ethers.formatUnits(allocationForMarket, "ether")} from quote: ${ethers.formatUnits(quote, "ether")}`,
+//       // );
+//       let remainingAllocation = ethers.formatUnits(
+//         allocationForMarket - quote,
+//         "ether",
+//       );
+//       console.log(
+//         `Remaining allocation for ${market.currencyKey} ${
+//           market.position > 0 ? "DOWN" : "UP"
+//         }: ${remainingAllocation}`,
+//       );
+//       return Number(remainingAllocation);
+//     }
+//   }
+//   console.log("returning zero");
+//   return 0;
+// };

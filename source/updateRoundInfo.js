@@ -8,16 +8,16 @@ const updateRoundInfo = async (
   networkId,
 ) => {
   const roundInfoRef = await db.collection("round").doc(round.toString()).get();
-  const tradeLogRef = await db
-    .collection("tradeLog")
-    .where("round", "==", round.toString())
-    .get();
-  const errorLogRef = await db
-    .collection("errorLog")
-    .where("round", "==", round.toString())
-    .get();
-  const tradeLog = tradeLogRef.docs.map((doc) => doc.data());
-  const errorLog = errorLogRef.docs.map((doc) => doc.data());
+  // const tradeLogRef = await db
+  //   .collection("tradeLog")
+  //   .where("round", "==", round.toString())
+  //   .get();
+  // const errorLogRef = await db
+  //   .collection("errorLog")
+  //   .where("round", "==", round.toString())
+  //   .get();
+  // const tradeLog = tradeLogRef.docs.map((doc) => doc.data());
+  // const errorLog = errorLogRef.docs.map((doc) => doc.data());
   // if roundInfoRef is not found, create new document
   let roundInfo;
   if (!roundInfoRef.exists) {
@@ -36,14 +36,14 @@ const updateRoundInfo = async (
   let totalTraded = roundInfo.totalTradedOP;
 
   // review tradelog to find amount traded and updates in db if needed
-  const updatedTraded = await updateTotalTraded(
-    tradeLog,
-    networkId,
-    BigInt(totalTraded),
-    round,
-    db,
-  );
-  totalTraded = updatedTraded;
+  // const updatedTraded = await updateTotalTraded(
+  //   tradeLog,
+  //   networkId,
+  //   BigInt(totalTraded),
+  //   round,
+  //   db,
+  // );
+  // totalTraded = updatedTraded;
 
   console.log(
     `========== TRADED IN ROUND ${round}: $${Number(formatUnits(totalTraded, "ether")).toFixed(2)} ALLOCATION: $${formatUnits(
@@ -53,9 +53,9 @@ const updateRoundInfo = async (
   );
   return {
     availableAllocationForRound,
-    tradeLog,
-    errorLog,
-    totalTraded,
+    // tradeLog,
+    // errorLog,
+    // totalTraded,
   };
 };
 
