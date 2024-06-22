@@ -2,8 +2,9 @@ const Vault = require("../contracts/Vault.js");
 // const Vault = require("../contracts/VaultContract.js");
 const { ethers } = require("ethers");
 require("dotenv").config();
-const { wallet, etherprovider, gasPrice } = require("../constants.js");
+const { wallet, arbWallet } = require("../constants.js");
 const { erc20Contract } = require("../contracts/erc20");
+const { thalesAMMContract } = require("../contracts/ThalesAMM");
 
 /**
  * This function initializes the Firebase Admin SDK and retrieves relevant data from the blockchain and Firestore.
@@ -12,7 +13,10 @@ const { erc20Contract } = require("../contracts/erc20");
  * @returns {Promise<{round: number, roundEndTime: string, closingDate: number, skewImpactLimit: string, db: Firestore}>} An object containing the retrieved data.
  */
 const setVariables = async (network, db) => {
+  const decimals = network == "optimism" ? 18 : 6;
+
   // Create a new ethers.Contract object for interacting with the AMM Vault contract.
+  // Note: Always use the OP-Main network. This is for internal tracking purposes
   const contract = new ethers.Contract(
     process.env.AMM_VAULT_CONTRACT,
     Vault.abi,
@@ -52,9 +56,6 @@ const setVariables = async (network, db) => {
     console.log("Ref empty!");
   }
 
-  // const tradeLogRef = db.collection(round.toString()).doc("tradeLog");
-  // const errorLogRef = db.collection(round.toString()).doc("errorLog");
-
   // Set the skew impact limit to networkData reference
   const skewImpactLimit = networkData.docs[0].data().skewImpactLimit;
   const priceUpperLimit = networkData.docs[0].data().priceUpperLimit;
@@ -62,13 +63,16 @@ const setVariables = async (network, db) => {
   const minTradeAmount = networkData.docs[0].data().minTradeAmount;
   // const tradingAllocation = networkData.docs[0].data().tradingAllocation;
 
+  // // get ethers wallet for optimism
+  // const susd = new ethers.Contract(
+  //   process.env.OP_SUSD_CONTRACT,
+  //   erc20Contract.abi,
+  //   wallet,
+  // );
+
   // get ethers wallet for optimism
-  const susd = new ethers.Contract(
-    process.env.OP_SUSD_CONTRACT,
-    erc20Contract.abi,
-    wallet,
-  );
-  const usdLeft = await susd.balanceOf(wallet.address);
+  const usdLeft = await getUsdLeft(wallet, network);
+  // console.log(`USD Left: ${ethers.formatUnits(usdLeft, decimals)}`);
 
   console.log(
     `============ PRICE RANGE: $${ethers.formatUnits(priceLowerLimit, "ether")} - ${ethers.formatUnits(priceUpperLimit, "ether")}  SKEW LIMIT: ${skewImpactLimit} ==============`,
@@ -102,6 +106,37 @@ const getTimeLeft = (timeLeft) => {
     timeLeftInMinutes,
     timeLeftInSeconds,
   };
+};
+
+// const setVariable = (networkId) => {
+//   if (+networkId == 10) {
+//     const contract = new ethers.Contract(
+//       process.env.THALES_AMM_CONTRACT,
+//       thalesAMMContract.abi,
+//       wallet,
+//     );
+//     return contract;
+//   }
+//   if (+networkId == 42161) {
+//     const contract = new ethers.Contract(
+//       process.env.ARBITRUM_THALES_AMM_CONTRACT,
+//       thalesAMMContract.abi,
+//       arbWallet,
+//     );
+//     return contract;
+//   }
+// };
+
+const getUsdLeft = async (wallet, network) => {
+  const susd = new ethers.Contract(
+    network == "optimism"
+      ? process.env.OP_SUSD_CONTRACT
+      : process.env.ARBITRUM_USDC_CONTRACT,
+    erc20Contract.abi,
+    network == "optimism" ? wallet : arbWallet,
+  );
+  const usdLeft = await susd.balanceOf(wallet.address);
+  return usdLeft;
 };
 
 module.exports = { setVariables };

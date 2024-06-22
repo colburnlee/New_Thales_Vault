@@ -32,20 +32,15 @@ const checkTrades = async (
       (priceImpact) => priceImpact.market.toLowerCase() === market.address,
     );
 
-    // console.log(` Market: ${market.address}, maturity date: ${market.maturityDate}, roundEndTime: ${roundEndTime} `)
     if (
       inTradingWeek(+market.maturityDate, +closingDate) &&
       marketPrices &&
       marketPriceImpact
     ) {
-      // console.log(
-      //   `Market: ${market.address} Prices: ${marketPrices} PriceImpact: ${marketPriceImpact}  `,
-      // );
       try {
         let priceUP, priceDOWN, buyPriceImpactUP, buyPriceImpactDOWN;
         buyPriceImpactUP = Number(marketPriceImpact.upPriceImpact) / 1e18;
         buyPriceImpactDOWN = Number(marketPriceImpact.downPriceImpact) / 1e18;
-        // console.log(`Market: ${market.address} PriceImpactUP: ${marketPriceImpact.upPriceImpact} vs ${buyPriceImpactUP} PriceDOWN: ${buyPriceImpactDOWN} vs ${marketPriceImpact.downPriceImpact} `)
 
         if (networkId == "10" || networkId == "56") {
           priceUP = Number(marketPrices.upPrice) / Number(1e18);
@@ -56,9 +51,6 @@ const checkTrades = async (
           priceDOWN = Number(marketPrices.downPrice) / Number(1e6);
         }
 
-        // console.log(
-        //   `checking:  ${priceUP} > ${priceLowerLimit} && ${priceUP} < ${priceUpperLimit} && ${buyPriceImpactUP} < ${skewImpactLimit}`,
-        // );
         if (
           priceUP > priceLowerLimit &&
           priceUP < priceUpperLimit &&

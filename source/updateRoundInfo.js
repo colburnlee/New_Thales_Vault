@@ -8,16 +8,6 @@ const updateRoundInfo = async (
   networkId,
 ) => {
   const roundInfoRef = await db.collection("round").doc(round.toString()).get();
-  // const tradeLogRef = await db
-  //   .collection("tradeLog")
-  //   .where("round", "==", round.toString())
-  //   .get();
-  // const errorLogRef = await db
-  //   .collection("errorLog")
-  //   .where("round", "==", round.toString())
-  //   .get();
-  // const tradeLog = tradeLogRef.docs.map((doc) => doc.data());
-  // const errorLog = errorLogRef.docs.map((doc) => doc.data());
   // if roundInfoRef is not found, create new document
   let roundInfo;
   if (!roundInfoRef.exists) {
@@ -35,16 +25,6 @@ const updateRoundInfo = async (
   const availableAllocationForRound = roundInfo.availableAllocationForRound;
   let totalTraded = roundInfo.totalTradedOP;
 
-  // review tradelog to find amount traded and updates in db if needed
-  // const updatedTraded = await updateTotalTraded(
-  //   tradeLog,
-  //   networkId,
-  //   BigInt(totalTraded),
-  //   round,
-  //   db,
-  // );
-  // totalTraded = updatedTraded;
-
   console.log(
     `========== TRADED IN ROUND ${round}: $${Number(formatUnits(totalTraded, "ether")).toFixed(2)} ALLOCATION: $${formatUnits(
       availableAllocationForRound,
@@ -53,9 +33,6 @@ const updateRoundInfo = async (
   );
   return {
     availableAllocationForRound,
-    // tradeLog,
-    // errorLog,
-    // totalTraded,
   };
 };
 
@@ -85,11 +62,6 @@ const createNewEntry = async (
     let errorMessage = {
       network: networkId,
       round: round.toString(),
-      currencyKey: "",
-      market: "",
-      position: "",
-      amount: "",
-      quote: "",
       error: error,
       timestamp: timestamp,
     };
@@ -111,34 +83,6 @@ const createNewEntry = async (
   const setData = async (data) => await ref.set(data);
   // Set the data in the database
   await setData(data);
-};
-
-const updateTotalTraded = async (
-  tradeLog,
-  networkId,
-  totalTraded,
-  round,
-  db,
-) => {
-  let total = BigInt(0);
-  for (const key in tradeLog) {
-    if (tradeLog[key].network == networkId) {
-      total += BigInt(tradeLog[key].quote);
-    }
-  }
-  // console.log(
-  //   `comparing total traded: ${total} to totalTraded: ${totalTraded}`,
-  // );
-  if (total != totalTraded) {
-    const res = await db
-      .collection("round")
-      .doc(round.toString())
-      .update({ totalTradedOP: total.toString() });
-    console.log(
-      `++++++++++ Total traded updated to: $${formatUnits(totalTraded)} ++++++++++`,
-    );
-  }
-  return total;
 };
 
 module.exports = {

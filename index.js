@@ -72,12 +72,13 @@ initializeApp({
 // Get a reference to the Firestore database.
 const db = getFirestore();
 
-async function doMain() {
+const checkNetwork = async (networkId, positionalContractAddress) => {
+  const network = networkId == "10" ? "optimism" : "arbitrum";
+  // const positionalContractAddress = process.env.POSITIONAL_MARKET_DATA_CONTRACT;
+
   console.log(
-    "==================== START PROCESSING OP VAULT ====================",
+    `================== START PROCESSING ${network.toUpperCase()} VAULT ==================`,
   );
-  const networkId = "10";
-  const positionalContractAddress = process.env.POSITIONAL_MARKET_DATA_CONTRACT;
 
   // Set variables - current round info, set network information
   const {
@@ -90,12 +91,15 @@ async function doMain() {
     priceLowerLimit,
     minTradeAmount,
     usdLeft,
-  } = await setVariables("optimism", db);
+  } = await setVariables(network, db);
   // Get trade log from db. Update db with current round info
-  const {
-    availableAllocationForRound,
-  } = // tradeLog, totalTraded
-    await updateRoundInfo(db, round, roundEndTime, closingDate, networkId);
+  const { availableAllocationForRound } = await updateRoundInfo(
+    db,
+    round,
+    roundEndTime,
+    closingDate,
+    networkId,
+  );
 
   if (usdLeft < minTradeAmount) {
     console.log("No more available funds for this round");
@@ -123,7 +127,6 @@ async function doMain() {
   // build and submit orders
   const builtOrders = await buildOrder(
     eligibleMarkets,
-    // tradeLog,
     skewImpactLimit,
     round,
     +networkId,
@@ -134,7 +137,14 @@ async function doMain() {
 
   const executedTrades = await executeTrade(builtOrders, round, networkId, db);
   console.log(
-    "===================== END PROCESSING OP VAULT =====================",
+    `===================== END PROCESSING ${network.toUpperCase()} VAULT =====================`,
+  );
+};
+
+async function doMain() {
+  checkNetwork(
+    process.env.NETWORK_ID,
+    process.env.POSITIONAL_MARKET_DATA_CONTRACT,
   );
 }
 

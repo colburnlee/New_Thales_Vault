@@ -83,10 +83,6 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
           timestamp: timestamp,
         };
         console.log(error);
-        // append to db
-        // const res = await db
-        //   .collection("round")
-        //   .where("round", "==", round.toString());
         const res = await db.collection("errorLog").add(errorMessage);
         console.log(`error added to db with hash: ${res.id}`);
       }
