@@ -114,3 +114,5 @@ data.js
 data.json
 arbitrumData.json
 data/
+firebase.json
+test/

@@ -14,8 +14,16 @@ NOTE: PLEASE CHECK ABI FILES TO BE UP TO DATE!
 
 ## Order of execution
 
+_Old_
 index.js -> doLoop() -> doMain() -> vault.js -> ...
 processVault() -> await trade() -> await closeRound()
+
+- New \*
+  **index.js**
+
+* [ ] Pull in wallet information (information neededt to execute an order)
+* [ ] Pull in network information. This will include all needed
+* [ ]
 
 ## Vault Addresses
 

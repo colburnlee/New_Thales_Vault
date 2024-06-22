@@ -1,22 +1,16 @@
-const vaultContract = {
+const PositionalMarketManagerContractAbi = {
   abi: [
     {
       anonymous: false,
       inputs: [
         {
           indexed: false,
-          internalType: "address",
-          name: "user",
-          type: "address",
-        },
-        {
-          indexed: false,
           internalType: "uint256",
-          name: "amount",
+          name: "duration",
           type: "uint256",
         },
       ],
-      name: "Claimed",
+      name: "ExpiryDurationUpdated",
       type: "event",
     },
     {
@@ -25,17 +19,78 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "address",
-          name: "user",
+          name: "market",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "creator",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "bytes32",
+          name: "oracleKey",
+          type: "bytes32",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "strikePrice",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "maturityDate",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "expiryDate",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "up",
           type: "address",
         },
         {
           indexed: false,
-          internalType: "uint256",
-          name: "amount",
-          type: "uint256",
+          internalType: "address",
+          name: "down",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "bool",
+          name: "customMarket",
+          type: "bool",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "customOracle",
+          type: "address",
         },
       ],
-      name: "Deposited",
+      name: "MarketCreated",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "bool",
+          name: "enabled",
+          type: "bool",
+        },
+      ],
+      name: "MarketCreationEnabledUpdated",
       type: "event",
     },
     {
@@ -44,11 +99,68 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "uint256",
-          name: "maxAllowedDeposit",
+          name: "_allowedDate1",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_allowedDate2",
           type: "uint256",
         },
       ],
-      name: "MaxAllowedDepositChanged",
+      name: "MarketCreationParametersChanged",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "address",
+          name: "market",
+          type: "address",
+        },
+      ],
+      name: "MarketExpired",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "contract PositionalMarketManager",
+          name: "receivingManager",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "contract PositionalMarket[]",
+          name: "markets",
+          type: "address[]",
+        },
+      ],
+      name: "MarketsMigrated",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "contract PositionalMarketManager",
+          name: "migratingManager",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "contract PositionalMarket[]",
+          name: "markets",
+          type: "address[]",
+        },
+      ],
+      name: "MarketsReceived",
       type: "event",
     },
     {
@@ -57,24 +169,11 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "uint256",
-          name: "MaxAllowedUsersChanged",
+          name: "duration",
           type: "uint256",
         },
       ],
-      name: "MaxAllowedUsersChanged",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "minAllowedDeposit",
-          type: "uint256",
-        },
-      ],
-      name: "MinAllowedDepositChanged",
+      name: "MaxTimeToMaturityUpdated",
       type: "event",
     },
     {
@@ -114,12 +213,12 @@ const vaultContract = {
       inputs: [
         {
           indexed: false,
-          internalType: "address",
-          name: "account",
-          type: "address",
+          internalType: "bool",
+          name: "isPaused",
+          type: "bool",
         },
       ],
-      name: "Paused",
+      name: "PauseChanged",
       type: "event",
     },
     {
@@ -128,75 +227,11 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "uint256",
-          name: "round",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "roundPnL",
+          name: "priceBuffer",
           type: "uint256",
         },
       ],
-      name: "RoundClosed",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "roundLength",
-          type: "uint256",
-        },
-      ],
-      name: "RoundLengthChanged",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "allocationLimitsPerMarketPerRound",
-          type: "uint256",
-        },
-      ],
-      name: "SetAllocationLimits",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "SetMinTradeAmount",
-          type: "uint256",
-        },
-      ],
-      name: "SetMinTradeAmount",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "priceLowerLimit",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "priceUpperLimit",
-          type: "uint256",
-        },
-      ],
-      name: "SetPriceLimits",
+      name: "PriceBufferChanged",
       type: "event",
     },
     {
@@ -205,11 +240,11 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "address",
-          name: "sUSD",
+          name: "manager",
           type: "address",
         },
       ],
-      name: "SetSUSD",
+      name: "SetMigratingManager",
       type: "event",
     },
     {
@@ -217,25 +252,12 @@ const vaultContract = {
       inputs: [
         {
           indexed: false,
-          internalType: "int256",
-          name: "skewImpact",
-          type: "int256",
+          internalType: "bool",
+          name: "_SetOnlyAMMMintingAndBurning",
+          type: "bool",
         },
       ],
-      name: "SetSkewImpactLimit",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "address",
-          name: "stakingThales",
-          type: "address",
-        },
-      ],
-      name: "StakingThalesChanged",
+      name: "SetOnlyAMMMintingAndBurning",
       type: "event",
     },
     {
@@ -244,11 +266,11 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "address",
-          name: "thalesAmm",
+          name: "_positionalMarketFactory",
           type: "address",
         },
       ],
-      name: "ThalesAMMChanged",
+      name: "SetPositionalMarketFactory",
       type: "event",
     },
     {
@@ -257,29 +279,11 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "address",
-          name: "market",
+          name: "_address",
           type: "address",
         },
-        {
-          indexed: false,
-          internalType: "enum IThalesAMM.Position",
-          name: "position",
-          type: "uint8",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "amount",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "quote",
-          type: "uint256",
-        },
       ],
-      name: "TradeExecuted",
+      name: "SetPriceFeed",
       type: "event",
     },
     {
@@ -288,11 +292,24 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "address",
-          name: "account",
+          name: "_zeroExAddress",
           type: "address",
         },
       ],
-      name: "Unpaused",
+      name: "SetZeroExAddress",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "address",
+          name: "_address",
+          type: "address",
+        },
+      ],
+      name: "SetsUSD",
       type: "event",
     },
     {
@@ -301,30 +318,11 @@ const vaultContract = {
         {
           indexed: false,
           internalType: "uint256",
-          name: "utilizationRate",
+          name: "timeframeBuffer",
           type: "uint256",
         },
       ],
-      name: "UtilizationRateChanged",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [],
-      name: "VaultStarted",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "address",
-          name: "user",
-          type: "address",
-        },
-      ],
-      name: "WithdrawalRequested",
+      name: "TimeframeBufferChanged",
       type: "event",
     },
     {
@@ -335,94 +333,45 @@ const vaultContract = {
       type: "function",
     },
     {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "index",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "pageSize",
+          type: "uint256",
+        },
+      ],
+      name: "activeMarkets",
+      outputs: [
+        {
+          internalType: "address[]",
+          name: "",
+          type: "address[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_address",
+          type: "address",
+        },
+      ],
+      name: "addWhitelistedAddress",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
       inputs: [],
-      name: "allocationLimitsPerMarketPerRound",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      name: "allocationPerRound",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      name: "allocationSpentInARound",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-        {
-          internalType: "address",
-          name: "",
-          type: "address",
-        },
-      ],
-      name: "allocationSpentPerRound",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-        {
-          internalType: "address",
-          name: "",
-          type: "address",
-        },
-      ],
-      name: "balancesPerRound",
+      name: "allowedDate1",
       outputs: [
         {
           internalType: "uint256",
@@ -435,7 +384,124 @@ const vaultContract = {
     },
     {
       inputs: [],
-      name: "canCloseCurrentRound",
+      name: "allowedDate2",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "oracleKey",
+          type: "bytes32",
+        },
+        {
+          internalType: "uint256",
+          name: "maturity",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "strikePrice",
+          type: "uint256",
+        },
+      ],
+      name: "canCreateMarket",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+        {
+          internalType: "string",
+          name: "",
+          type: "string",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "capitalRequirement",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "oracleKey",
+          type: "bytes32",
+        },
+        {
+          internalType: "uint256",
+          name: "strikePrice",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "maturity",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "initialMint",
+          type: "uint256",
+        },
+      ],
+      name: "createMarket",
+      outputs: [
+        {
+          internalType: "contract IPositionalMarket",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32[]",
+          name: "oracleKeys",
+          type: "bytes32[]",
+        },
+        {
+          internalType: "uint256[]",
+          name: "strikePrices",
+          type: "uint256[]",
+        },
+        {
+          internalType: "uint256[]",
+          name: "maturities",
+          type: "uint256[]",
+        },
+      ],
+      name: "createMarkets",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "customMarketCreationEnabled",
       outputs: [
         {
           internalType: "bool",
@@ -450,15 +516,34 @@ const vaultContract = {
       inputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "delta",
           type: "uint256",
         },
       ],
-      name: "capPerRound",
+      name: "decrementTotalDeposited",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "disableWhitelistedAddresses",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "durations",
       outputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "expiryDuration",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "maxTimeToMaturity",
           type: "uint256",
         },
       ],
@@ -467,7 +552,7 @@ const vaultContract = {
     },
     {
       inputs: [],
-      name: "closeRound",
+      name: "enableWhitelistedAddresses",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -475,22 +560,43 @@ const vaultContract = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "roundA",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "roundB",
-          type: "uint256",
+          internalType: "address[]",
+          name: "markets",
+          type: "address[]",
         },
       ],
-      name: "cumulativePnLBetweenRounds",
+      name: "expireMarkets",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "oracleKey",
+          type: "bytes32",
+        },
+      ],
+      name: "getStrikePriceStep",
       outputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "result",
           type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getThalesAMM",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
         },
       ],
       stateMutability: "view",
@@ -500,30 +606,11 @@ const vaultContract = {
       inputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "delta",
           type: "uint256",
         },
       ],
-      name: "cumulativeProfitAndLoss",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "amount",
-          type: "uint256",
-        },
-      ],
-      name: "deposit",
+      name: "incrementTotalDeposited",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -532,175 +619,28 @@ const vaultContract = {
       inputs: [
         {
           internalType: "address",
-          name: "",
+          name: "_owner",
           type: "address",
         },
-      ],
-      name: "depositReceipts",
-      outputs: [
         {
-          internalType: "uint256",
-          name: "round",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "amount",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "address",
-          name: "market",
+          internalType: "contract IERC20",
+          name: "_sUSD",
           type: "address",
         },
-      ],
-      name: "getAvailableAllocationForMarket",
-      outputs: [
         {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "getAvailableToDeposit",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "_round",
-          type: "uint256",
-        },
-        {
-          internalType: "address",
-          name: "user",
+          internalType: "contract IPriceFeed",
+          name: "_priceFeed",
           type: "address",
         },
-      ],
-      name: "getBalancesPerRound",
-      outputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "_expiryDuration",
           type: "uint256",
         },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "getCurrentRoundEnd",
-      outputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "_maxTimeToMaturity",
           type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "initNonReentrant",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          components: [
-            {
-              internalType: "address",
-              name: "_owner",
-              type: "address",
-            },
-            {
-              internalType: "contract IThalesAMM",
-              name: "_thalesAmm",
-              type: "address",
-            },
-            {
-              internalType: "contract IERC20Upgradeable",
-              name: "_sUSD",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "_roundLength",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "_priceLowerLimit",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "_priceUpperLimit",
-              type: "uint256",
-            },
-            {
-              internalType: "int256",
-              name: "_skewImpactLimit",
-              type: "int256",
-            },
-            {
-              internalType: "uint256",
-              name: "_allocationLimitsPerMarketPerRound",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "_maxAllowedDeposit",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "_utilizationRate",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "_minDepositAmount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "_maxAllowedUsers",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "_minTradeAmount",
-              type: "uint256",
-            },
-          ],
-          internalType: "struct AmmVault.InitParams",
-          name: "params",
-          type: "tuple",
         },
       ],
       name: "initialize",
@@ -711,17 +651,31 @@ const vaultContract = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-        {
           internalType: "address",
-          name: "",
+          name: "candidate",
           type: "address",
         },
       ],
-      name: "isTradingMarketInARound",
+      name: "isActiveMarket",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "candidate",
+          type: "address",
+        },
+      ],
+      name: "isKnownMarket",
       outputs: [
         {
           internalType: "bool",
@@ -734,7 +688,7 @@ const vaultContract = {
     },
     {
       inputs: [],
-      name: "maxAllowedDeposit",
+      name: "lastPauseTime",
       outputs: [
         {
           internalType: "uint256",
@@ -747,7 +701,20 @@ const vaultContract = {
     },
     {
       inputs: [],
-      name: "maxAllowedUsers",
+      name: "marketCreationEnabled",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "marketCreationMonthLimit",
       outputs: [
         {
           internalType: "uint256",
@@ -759,8 +726,72 @@ const vaultContract = {
       type: "function",
     },
     {
-      inputs: [],
-      name: "minDepositAmount",
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "marketExistsByOracleKeyDateAndStrikePrice",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "marketsPerOracleKey",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      name: "marketsStrikePrice",
       outputs: [
         {
           internalType: "uint256",
@@ -772,13 +803,37 @@ const vaultContract = {
       type: "function",
     },
     {
-      inputs: [],
-      name: "minTradeAmount",
-      outputs: [
+      inputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "index",
           type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "pageSize",
+          type: "uint256",
+        },
+      ],
+      name: "maturedMarkets",
+      outputs: [
+        {
+          internalType: "address[]",
+          name: "",
+          type: "address[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "needsTransformingCollateral",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
         },
       ],
       stateMutability: "view",
@@ -812,6 +867,58 @@ const vaultContract = {
     },
     {
       inputs: [],
+      name: "numActiveMarkets",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "numMaturedMarkets",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "onlyAMMMintingAndBurning",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "onlyWhitelistedAddressesCanCreateMarkets",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
       name: "owner",
       outputs: [
         {
@@ -838,7 +945,20 @@ const vaultContract = {
     },
     {
       inputs: [],
-      name: "priceLowerLimit",
+      name: "positionalMarketFactory",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "priceBuffer",
       outputs: [
         {
           internalType: "uint256",
@@ -851,12 +971,12 @@ const vaultContract = {
     },
     {
       inputs: [],
-      name: "priceUpperLimit",
+      name: "priceFeed",
       outputs: [
         {
-          internalType: "uint256",
+          internalType: "contract IPriceFeed",
           name: "",
-          type: "uint256",
+          type: "address",
         },
       ],
       stateMutability: "view",
@@ -865,57 +985,51 @@ const vaultContract = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
+          internalType: "address",
+          name: "_address",
+          type: "address",
         },
       ],
-      name: "profitAndLossPerRound",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
+      name: "removeWhitelistedAddress",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
     },
     {
-      inputs: [],
-      name: "round",
-      outputs: [
+      inputs: [
         {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
+          internalType: "address",
+          name: "market",
+          type: "address",
         },
       ],
-      stateMutability: "view",
+      name: "resolveMarket",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
     },
     {
-      inputs: [],
-      name: "roundLength",
-      outputs: [
+      inputs: [
         {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
+          internalType: "address[]",
+          name: "markets",
+          type: "address[]",
         },
       ],
-      stateMutability: "view",
+      name: "resolveMarketsBatch",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
     },
     {
       inputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "value",
           type: "uint256",
         },
       ],
-      name: "roundStartTime",
+      name: "reverseTransformCollateral",
       outputs: [
         {
           internalType: "uint256",
@@ -931,7 +1045,7 @@ const vaultContract = {
       name: "sUSD",
       outputs: [
         {
-          internalType: "contract IERC20Upgradeable",
+          internalType: "contract IERC20",
           name: "",
           type: "address",
         },
@@ -943,11 +1057,24 @@ const vaultContract = {
       inputs: [
         {
           internalType: "uint256",
-          name: "_allocationLimitsPerMarketPerRound",
+          name: "_expiryDuration",
           type: "uint256",
         },
       ],
-      name: "setAllocationLimits",
+      name: "setExpiryDuration",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bool",
+          name: "enabled",
+          type: "bool",
+        },
+      ],
+      name: "setMarketCreationEnabled",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -956,11 +1083,16 @@ const vaultContract = {
       inputs: [
         {
           internalType: "uint256",
-          name: "_maxAllowedDeposit",
+          name: "_allowedDate1",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_allowedDate2",
           type: "uint256",
         },
       ],
-      name: "setMaxAllowedDeposit",
+      name: "setMarketCreationParameters",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -969,11 +1101,11 @@ const vaultContract = {
       inputs: [
         {
           internalType: "uint256",
-          name: "_maxAllowedUsers",
+          name: "_maxTimeToMaturity",
           type: "uint256",
         },
       ],
-      name: "setMaxAllowedUsers",
+      name: "setMaxTimeToMaturity",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -981,12 +1113,12 @@ const vaultContract = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "_minDepositAmount",
-          type: "uint256",
+          internalType: "bool",
+          name: "_needsTransformingCollateral",
+          type: "bool",
         },
       ],
-      name: "setMinAllowedDeposit",
+      name: "setNeedsTransformingCollateral",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -994,12 +1126,12 @@ const vaultContract = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "_minTradeAmount",
-          type: "uint256",
+          internalType: "bool",
+          name: "_onlyAMMMintingAndBurning",
+          type: "bool",
         },
       ],
-      name: "setMinTradeAmount",
+      name: "setOnlyAMMMintingAndBurning",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -1020,158 +1152,97 @@ const vaultContract = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "_priceLowerLimit",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "_priceUpperLimit",
-          type: "uint256",
+          internalType: "bool",
+          name: "_paused",
+          type: "bool",
         },
       ],
-      name: "setPriceLimits",
+      name: "setPaused",
       outputs: [],
       stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "_roundLength",
-          type: "uint256",
-        },
-      ],
-      name: "setRoundLength",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "int256",
-          name: "_skewImpactLimit",
-          type: "int256",
-        },
-      ],
-      name: "setSkewImpactLimit",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "contract IStakingThales",
-          name: "_stakingThales",
-          type: "address",
-        },
-      ],
-      name: "setStakingThales",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "contract IThalesAMM",
-          name: "_thalesAMM",
-          type: "address",
-        },
-      ],
-      name: "setThalesAmm",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "_utilizationRate",
-          type: "uint256",
-        },
-      ],
-      name: "setUtilizationRate",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "skewImpactLimit",
-      outputs: [
-        {
-          internalType: "int256",
-          name: "",
-          type: "int256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "stakingThales",
-      outputs: [
-        {
-          internalType: "contract IStakingThales",
-          name: "",
-          type: "address",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "startVault",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "thalesAMM",
-      outputs: [
-        {
-          internalType: "contract IThalesAMM",
-          name: "",
-          type: "address",
-        },
-      ],
-      stateMutability: "view",
       type: "function",
     },
     {
       inputs: [
         {
           internalType: "address",
-          name: "market",
+          name: "_positionalMarketFactory",
           type: "address",
         },
+      ],
+      name: "setPositionalMarketFactory",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
         {
           internalType: "uint256",
-          name: "amount",
+          name: "_priceBuffer",
           type: "uint256",
         },
+      ],
+      name: "setPriceBuffer",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
         {
-          internalType: "enum IThalesAMM.Position",
-          name: "position",
-          type: "uint8",
+          internalType: "address",
+          name: "_address",
+          type: "address",
         },
       ],
-      name: "trade",
+      name: "setPriceFeed",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_timeframeBuffer",
+          type: "uint256",
+        },
+      ],
+      name: "setTimeframeBuffer",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address[]",
+          name: "_whitelistedAddresses",
+          type: "address[]",
+        },
+      ],
+      name: "setWhitelistedAddresses",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_address",
+          type: "address",
+        },
+      ],
+      name: "setsUSD",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
     },
     {
       inputs: [],
-      name: "tradingAllocation",
+      name: "timeframeBuffer",
       outputs: [
         {
           internalType: "uint256",
@@ -1183,48 +1254,13 @@ const vaultContract = {
       type: "function",
     },
     {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-        {
-          internalType: "address",
-          name: "",
-          type: "address",
-        },
-      ],
-      name: "tradingMarketPositionPerRound",
+      inputs: [],
+      name: "totalDeposited",
       outputs: [
         {
-          internalType: "enum IThalesAMM.Position",
-          name: "",
-          type: "uint8",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
           internalType: "uint256",
           name: "",
           type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      name: "tradingMarketsPerRound",
-      outputs: [
-        {
-          internalType: "address",
-          name: "",
-          type: "address",
         },
       ],
       stateMutability: "view",
@@ -1246,93 +1282,22 @@ const vaultContract = {
     {
       inputs: [
         {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
+          internalType: "address",
+          name: "sender",
+          type: "address",
         },
         {
           internalType: "address",
-          name: "",
+          name: "receiver",
           type: "address",
         },
-      ],
-      name: "userInRound",
-      outputs: [
-        {
-          internalType: "bool",
-          name: "",
-          type: "bool",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "usersCurrentlyInVault",
-      outputs: [
         {
           internalType: "uint256",
-          name: "",
+          name: "amount",
           type: "uint256",
         },
       ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      name: "usersPerRound",
-      outputs: [
-        {
-          internalType: "address",
-          name: "",
-          type: "address",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "utilizationRate",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "vaultStarted",
-      outputs: [
-        {
-          internalType: "bool",
-          name: "",
-          type: "bool",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "withdrawalRequest",
+      name: "transferSusdTo",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -1340,12 +1305,31 @@ const vaultContract = {
     {
       inputs: [
         {
+          internalType: "uint256",
+          name: "value",
+          type: "uint256",
+        },
+      ],
+      name: "transformCollateral",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
           internalType: "address",
           name: "",
           type: "address",
         },
       ],
-      name: "withdrawalRequested",
+      name: "whitelistedAddresses",
       outputs: [
         {
           internalType: "bool",
@@ -1359,4 +1343,6 @@ const vaultContract = {
   ],
 };
 
-module.exports = vaultContract;
+module.exports = {
+  PositionalMarketManagerContractAbi,
+};
