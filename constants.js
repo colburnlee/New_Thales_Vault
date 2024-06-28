@@ -1,4 +1,4 @@
-const { ethers, JsonRpcProvider } = require("ethers");
+const { ethers, JsonRpcProvider, AlchemyProvider } = require("ethers");
 const { privateKeyToAccount } = require("viem/accounts");
 require("dotenv").config();
 const privateKey = process.env.PRIVATE_KEY;
@@ -14,16 +14,16 @@ const privateKey = process.env.PRIVATE_KEY;
 // };
 // console.log(serviceAccount)
 
-// let etherprovider = new AlchemyProvider(
-//   process.env.NETWORK,
-//   process.env.ALCHEMY
-// );
+let etherprovider = new AlchemyProvider(
+  process.env.NETWORK,
+  process.env.ALCHEMY,
+);
 
 // let etherprovider = new JsonRpcProvider(
 //   "https://rpc.ankr.com/optimism"
 // );
 
-let etherprovider = new JsonRpcProvider("https://1rpc.io/op"); //https://endpoints.omniatech.io/v1/op/mainnet/public
+// let etherprovider = new JsonRpcProvider("https://1rpc.io/op"); //https://endpoints.omniatech.io/v1/op/mainnet/public
 
 // let etherprovider = new JsonRpcProvider(process.env.OMNIA_URL);
 // let etherprovider = new JsonRpcProvider(
@@ -32,7 +32,8 @@ let etherprovider = new JsonRpcProvider("https://1rpc.io/op"); //https://endpoin
 
 // let arbitrumProvider = new JsonRpcProvider(process.env.ARBITRUM_OMNIA_URL);
 
-let arbitrumProvider = new JsonRpcProvider(process.env.ARBITRUM_1RPC_URL);
+// let arbitrumProvider = new JsonRpcProvider('https://arbitrum.llamarpc.com');
+let arbitrumProvider = new AlchemyProvider("arbitrum", process.env.ALCHEMY);
 
 let bscProvider = new JsonRpcProvider(process.env.BSC_1RPC_URL);
 

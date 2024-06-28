@@ -1,10 +1,10 @@
 require("dotenv").config();
 const {
-  positionalMarketDataContract: abi,
+  positionalMarketDataContractAbi,
 } = require("../contracts/PositionalMarketData");
 const {
-  PositionalMarketManagerContractAbi,
-} = require("../contracts/PositionalMarketManager");
+  positionalMarketDataContractArb,
+} = require("../contracts/ArbitrumPositionalMarketData");
 const thalesData = require("thales-data");
 const ethers = require("ethers");
 
@@ -18,29 +18,54 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
     network: +networkId,
     minMaturity: minMaturityValue,
   });
-  // console.log("Active Markets: ", activeMarkets)
+  console.log("Active Markets: ", activeMarkets.length);
+
+  const positionalAbi =
+    networkId == "10"
+      ? positionalMarketDataContractAbi.abi
+      : positionalMarketDataContractArb.abi;
 
   const positionalMarketDataContract = new ethers.Contract(
     positionalContractAddress, // Address of the Positional Market contract.
-    abi.abi, // ABI of the Positional Market contract.
+    positionalAbi, // ABI of the Positional Market contract.
     wallet, // Wallet object to use for transactions.
   );
+
+  let owner = await positionalMarketDataContract.owner();
+  console.log("Owner: ", owner);
 
   // Initialize two empty arrays to store prices and price impacts for all active markets.
   let [pricesForAllActiveMarkets, priceImpactForAllActiveMarkets] = [];
 
   // Use Promise.all to concurrently fetch the base prices and price impacts for all active markets.
-  [pricesForAllActiveMarkets, priceImpactForAllActiveMarkets] =
-    await Promise.all([
-      positionalMarketDataContract.getBatchBasePricesForAllActiveMarkets(
-        0,
-        activeMarkets.length,
-      ), // Get base prices for all active markets.
-      positionalMarketDataContract.getBatchPriceImpactForAllActiveMarkets(
-        0,
-        activeMarkets.length,
-      ), // Get price impacts for all active markets.
-    ]);
+  if (networkId == "10") {
+    console.log("NetworkId = 10");
+    [pricesForAllActiveMarkets, priceImpactForAllActiveMarkets] =
+      await Promise.all([
+        positionalMarketDataContract.getBatchBasePricesForAllActiveMarkets(
+          0,
+          activeMarkets.length,
+        ), // Get base prices for all active markets.
+        positionalMarketDataContract.getBatchPriceImpactForAllActiveMarkets(
+          0,
+          activeMarkets.length,
+        ), // Get price impacts for all active markets.
+      ]);
+  }
+  if (networkId == "42161") {
+    console.log("NetworkId = 42161");
+    [pricesForAllActiveMarkets, priceImpactForAllActiveMarkets] =
+      await Promise.all([
+        positionalMarketDataContract.getBatchBasePricesForAllActiveMarkets(
+          0,
+          activeMarkets.length,
+        ), // Get base prices for all active markets.
+        positionalMarketDataContract.getBatchPriceImpactForAllActiveMarkets(
+          0,
+          activeMarkets.length,
+        ), // Get price impacts for all active markets.
+      ]);
+  }
   console.log(
     `===================== FOUND ${activeMarkets.length} MARKETS =====================. `,
   );

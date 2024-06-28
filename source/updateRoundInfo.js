@@ -7,7 +7,7 @@ const updateRoundInfo = async (
   closingDate,
   networkId,
 ) => {
-  const roundInfoRef = await db.collection("round").doc(round.toString()).get();
+  let roundInfoRef = await db.collection("round").doc(round.toString()).get();
   // if roundInfoRef is not found, create new document
   let roundInfo;
   if (!roundInfoRef.exists) {
@@ -18,15 +18,15 @@ const updateRoundInfo = async (
       closingDate,
       networkId,
     );
-  } else {
-    roundInfo = roundInfoRef.data();
+    roundInfoRef = await db.collection("round").doc(round.toString()).get();
   }
+  roundInfo = roundInfoRef.data();
 
   const availableAllocationForRound = roundInfo.availableAllocationForRound;
-  let totalTraded = roundInfo.totalTradedOP;
+  // let totalTraded = roundInfo.totalTradedOP;
 
   console.log(
-    `========== TRADED IN ROUND ${round}: $${Number(formatUnits(totalTraded, "ether")).toFixed(2)} ALLOCATION: $${formatUnits(
+    `========== TRADED IN ROUND ${round}: ALLOCATION: $${formatUnits(
       availableAllocationForRound,
       "ether",
     )} ==========`,

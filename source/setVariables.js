@@ -14,6 +14,7 @@ const { thalesAMMContract } = require("../contracts/ThalesAMM");
  */
 const setVariables = async (network, db) => {
   const decimals = network == "optimism" ? 18 : 6;
+  const networkWallet = network == "optimism" ? wallet : arbWallet;
 
   // Create a new ethers.Contract object for interacting with the AMM Vault contract.
   // Note: Always use the OP-Main network. This is for internal tracking purposes
@@ -72,13 +73,15 @@ const setVariables = async (network, db) => {
 
   // get ethers wallet for optimism
   const usdLeft = await getUsdLeft(wallet, network);
-  // console.log(`USD Left: ${ethers.formatUnits(usdLeft, decimals)}`);
+  console.log(
+    `================ USD LEFT: $${ethers.formatUnits(usdLeft, decimals)} ================`,
+  );
 
   console.log(
     `============ PRICE RANGE: $${ethers.formatUnits(priceLowerLimit, "ether")} - ${ethers.formatUnits(priceUpperLimit, "ether")}  SKEW LIMIT: ${skewImpactLimit} ==============`,
   );
   return {
-    wallet,
+    wallet: networkWallet,
     round,
     roundEndTime,
     closingDate,
@@ -135,7 +138,11 @@ const getUsdLeft = async (wallet, network) => {
     erc20Contract.abi,
     network == "optimism" ? wallet : arbWallet,
   );
-  const usdLeft = await susd.balanceOf(wallet.address);
+  let usdLeft = await susd.balanceOf(wallet.address);
+  if (network == "arbitrum") {
+    usdLeft = ethers.parseUnits(usdLeft.toString(), 12);
+    console.log(usdLeft);
+  }
   return usdLeft;
 };
 
