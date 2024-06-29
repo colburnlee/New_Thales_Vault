@@ -1,5 +1,10 @@
 require("dotenv").config();
-const { etherprovider, viemAccount, wallet } = require("../constants");
+const {
+  etherprovider,
+  viemAccount,
+  wallet,
+  arbWallet,
+} = require("../constants");
 const { ethers } = require("ethers");
 const { thalesAMMContract } = require("../contracts/ThalesAMM");
 const { createPublicClient, http } = require("viem");
@@ -7,11 +12,6 @@ const { optimism } = require("viem/chains");
 const infuraURL = process.env.INFURA_OP_URL;
 const w3utils = require("web3-utils");
 const { publicActionsL2 } = require("viem/op-stack");
-
-const OPclient = createPublicClient({
-  chain: optimism,
-  transport: http(infuraURL),
-}).extend(publicActionsL2());
 
 const executeTrade = async (builtOrders, round, networkId, db) => {
   const contract = setVariable(networkId);
@@ -27,12 +27,6 @@ const executeTrade = async (builtOrders, round, networkId, db) => {
 
     if (order.amount > 0) {
       try {
-        // determine gas price
-        let fee =
-          (await OPclient.estimateTotalFee({
-            account: viemAccount,
-          })) / BigInt(1e18);
-
         // Execute trade
         let tx = await contract.buyFromAMM(
           order.market.address,
@@ -96,6 +90,14 @@ const setVariable = (networkId) => {
       process.env.THALES_AMM_CONTRACT,
       thalesAMMContract.abi,
       wallet,
+    );
+    return contract;
+  }
+  if (+networkId == 42161) {
+    const contract = new ethers.Contract(
+      process.env.ARBITRUM_THALES_AMM_CONTRACT,
+      thalesAMMContract.abi,
+      arbWallet,
     );
     return contract;
   }

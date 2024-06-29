@@ -141,7 +141,6 @@ const getUsdLeft = async (wallet, network) => {
   let usdLeft = await susd.balanceOf(wallet.address);
   if (network == "arbitrum") {
     usdLeft = ethers.parseUnits(usdLeft.toString(), 12);
-    console.log(usdLeft);
   }
   return usdLeft;
 };

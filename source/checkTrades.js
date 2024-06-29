@@ -42,14 +42,15 @@ const checkTrades = async (
         buyPriceImpactUP = Number(marketPriceImpact.upPriceImpact) / 1e18;
         buyPriceImpactDOWN = Number(marketPriceImpact.downPriceImpact) / 1e18;
 
-        if (networkId == "10" || networkId == "56") {
+        if (networkId == "10" || networkId == "42161") {
           priceUP = Number(marketPrices.upPrice) / Number(1e18);
           priceDOWN = Number(marketPrices.downPrice) / Number(1e18);
         }
-        if (networkId == "42161" || networkId == "56") {
-          priceUP = Number(marketPrices.upPrice) / Number(1e6);
-          priceDOWN = Number(marketPrices.downPrice) / Number(1e6);
-        }
+        // if (networkId == "42161" || networkId == "56") {
+        //   priceUP = Number(marketPrices.upPrice) / Number(1e6);
+        //   priceDOWN = Number(marketPrices.downPrice) / Number(1e6);
+        //   console.log(`priceUP: ${priceUP}, priceDOWN: ${priceDOWN}`)
+        // }
 
         if (
           priceUP > priceLowerLimit &&

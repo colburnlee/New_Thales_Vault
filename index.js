@@ -105,81 +105,12 @@ const checkNetwork = async (networkId, positionalContractAddress) => {
   );
 };
 
-// TEMPORARY
-const buildNetwork = async (networkId, positionalContractAddress) => {
-  const network = networkId == "10" ? "optimism" : "arbitrum";
-
-  console.log(
-    `================== START PROCESSING ${network.toUpperCase()} VAULT ==================`,
-  );
-
-  // Set variables - current round info, set network information
-  const {
-    wallet,
-    round,
-    roundEndTime,
-    closingDate,
-    skewImpactLimit,
-    priceUpperLimit,
-    priceLowerLimit,
-    minTradeAmount,
-    usdLeft,
-  } = await setVariables(network, db);
-  // Get trade log from db. Update db with current round info
-  const { availableAllocationForRound } = await updateRoundInfo(
-    db,
-    round,
-    roundEndTime,
-    closingDate,
-    networkId,
-  );
-
-  if (usdLeft < minTradeAmount) {
-    console.log("No more available funds for this round");
-    return;
-  }
-  // // check network for eligible markets
-  const {
-    pricesForAllActiveMarkets,
-    priceImpactForAllActiveMarkets,
-    activeMarkets,
-  } = await checkMarkets(wallet, positionalContractAddress, networkId);
-
-  // // check markets for eligible markets
-  const eligibleMarkets = await checkTrades(
-    pricesForAllActiveMarkets,
-    priceImpactForAllActiveMarkets,
-    skewImpactLimit,
-    activeMarkets,
-    networkId,
-    Number(priceUpperLimit) / Number(1e18), // Always 18 decimal places
-    Number(priceLowerLimit) / Number(1e18), // Always 18 decimal places
-    Number(closingDate),
-  );
-
-  // // build and submit orders
-  // const builtOrders = await buildOrder(
-  //   eligibleMarkets,
-  //   skewImpactLimit,
-  //   round,
-  //   +networkId,
-  //   minTradeAmount,
-  //   availableAllocationForRound,
-  //   db,
-  // );
-
-  // const executedTrades = await executeTrade(builtOrders, round, networkId, db);
-  console.log(
-    `===================== END PROCESSING ${network.toUpperCase()} VAULT =====================`,
-  );
-};
-
 async function doMain() {
-  // checkNetwork(
-  //   process.env.NETWORK_ID,
-  //   process.env.POSITIONAL_MARKET_DATA_CONTRACT,
-  // );
-  buildNetwork(
+  await checkNetwork(
+    process.env.NETWORK_ID,
+    process.env.POSITIONAL_MARKET_DATA_CONTRACT,
+  );
+  await checkNetwork(
     process.env.ARBITRUM_NETWORK_ID,
     process.env.ARBITRUM_POSITIONAL_MARKET_DATA_CONTRACT,
   );

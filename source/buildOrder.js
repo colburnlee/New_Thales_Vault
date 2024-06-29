@@ -1,12 +1,7 @@
 require("dotenv").config();
 const { ethers } = require("ethers");
-const { wallet } = require("../constants");
+const { wallet, arbWallet } = require("../constants");
 const { thalesAMMContract: abi } = require("../contracts/ThalesAMM");
-const thalesAMMContract = new ethers.Contract(
-  process.env.THALES_AMM_CONTRACT,
-  abi.abi,
-  wallet,
-);
 
 /**
  * Builds a list of orders for eligible markets.
@@ -31,6 +26,21 @@ const buildOrder = async (
   db,
 ) => {
   let builtOrders = [];
+  let thalesAMMContract;
+  if (networkId == "10") {
+    thalesAMMContract = new ethers.Contract(
+      process.env.THALES_AMM_CONTRACT,
+      abi.abi,
+      wallet,
+    );
+  } else if (networkId == "42161") {
+    thalesAMMContract = new ethers.Contract(
+      process.env.ARBITRUM_THALES_AMM_CONTRACT,
+      abi.abi,
+      arbWallet,
+    );
+  }
+
   for (const key in eligibleMarkets) {
     let market = eligibleMarkets[key];
     let quote;
@@ -101,11 +111,12 @@ const buildQuote = async (
   }
 
   // Lists the maximum amount of tokens that can be bought from the AMM in a position direction (0=UP, 1=DOWN)
+
   const maxAmmAmount = Number(
     (await thalesAMMContract.availableToBuyFromAMM(
       market.address,
       market.position,
-    )) / BigInt(1e18),
+    )) / BigInt(1e18), // always 18 decimal places
   );
 
   // Get the available allocation for this market in this round
@@ -175,7 +186,7 @@ const buildQuote = async (
 
   // Get the quote for the amount of tokens to buy. If the quote is over the max allocation, then reduce the amount to buy
   console.log(
-    `attempting to buy: ${ethers.formatUnits(amount, "ether")} ${market.position} ${market.address}`,
+    `attempting to buy: ${ethers.formatUnits(amount, decimals == 1e18 ? "ether" : "wei")} ${market.position} ${market.address}`,
   );
   quote =
     Number(
@@ -184,7 +195,7 @@ const buildQuote = async (
         market.position,
         ethers.parseUnits(amount.toString(), "ether"),
       ),
-    ) / 1e18;
+    ) / decimals;
   console.log(
     `${amount} ${market.currencyKey} ${
       market.position > 0 ? "DOWN" : "UP"
@@ -212,7 +223,7 @@ const buildQuote = async (
           market.position,
           ethers.parseUnits(amount.toString(), "ether"),
         ),
-      ) / 1e18;
+      ) / decimals;
     console.log(
       `New quote: $${quote.toFixed(2)} for ${amount} ${market.currencyKey} ${
         market.position > 0 ? "DOWN" : "UP"
@@ -228,7 +239,7 @@ const buildQuote = async (
         market.position,
         ethers.parseUnits(amount.toString(), "ether"),
       ),
-    ) / 1e18;
+    ) / decimals;
   console.log("final quote: ", finalQuote);
   console.log(
     `Quoted Price: $${finalQuote} Max Allocation: $${+availableAllocationForMarket.toFixed(2)}. Amount to buy: ${+finalAmount}`,

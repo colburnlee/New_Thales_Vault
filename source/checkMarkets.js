@@ -18,7 +18,6 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
     network: +networkId,
     minMaturity: minMaturityValue,
   });
-  console.log("Active Markets: ", activeMarkets.length);
 
   const positionalAbi =
     networkId == "10"
@@ -31,15 +30,11 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
     wallet, // Wallet object to use for transactions.
   );
 
-  let owner = await positionalMarketDataContract.owner();
-  console.log("Owner: ", owner);
-
   // Initialize two empty arrays to store prices and price impacts for all active markets.
   let [pricesForAllActiveMarkets, priceImpactForAllActiveMarkets] = [];
 
   // Use Promise.all to concurrently fetch the base prices and price impacts for all active markets.
   if (networkId == "10") {
-    console.log("NetworkId = 10");
     [pricesForAllActiveMarkets, priceImpactForAllActiveMarkets] =
       await Promise.all([
         positionalMarketDataContract.getBatchBasePricesForAllActiveMarkets(
@@ -53,7 +48,6 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
       ]);
   }
   if (networkId == "42161") {
-    console.log("NetworkId = 42161");
     [pricesForAllActiveMarkets, priceImpactForAllActiveMarkets] =
       await Promise.all([
         positionalMarketDataContract.getBatchBasePricesForAllActiveMarkets(
