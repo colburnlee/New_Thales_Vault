@@ -129,7 +129,7 @@ const buildQuote = async (
       "ether",
     );
     console.log(
-      `Remaining allocation for ${market.currencyKey} ${market.position > 0 ? "DOWN" : "UP"}: ${availableAllocationForMarket}`,
+      `Remaining allocation for ${market.currencyKey} ${market.position > 0 ? "DOWN" : "UP"}: $${Number(availableAllocationForMarket).toFixed(2)}`,
     );
   } else {
     availableAllocationForMarket = Number(availableAllocationForRound) * 0.05;
@@ -141,7 +141,7 @@ const buildQuote = async (
   const maxAllocationAmount = availableAllocationForMarket / market.price; // this is a cieling value, as it would a trade with zero slippage
   let amount = Math.round(maxAllocationAmount);
   console.log(
-    `Max AMM Amount: ${maxAmmAmount}, Available Allocation: ${availableAllocationForMarket}, Market Price ${market.price}, amount: ${amount}`,
+    `Max AMM Amount: ${maxAmmAmount}, Available Allocation: $${Number(availableAllocationForMarket).toFixed(2)}, Market Price $${Number(market.price).toFixed(2)}, amount: ${amount}`,
   );
 
   if (

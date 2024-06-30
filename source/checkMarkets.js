@@ -61,7 +61,7 @@ const checkMarkets = async (wallet, positionalContractAddress, networkId) => {
       ]);
   }
   console.log(
-    `===================== FOUND ${activeMarkets.length} MARKETS =====================. `,
+    `===================== FOUND ${activeMarkets.length} MARKETS ======================`,
   );
 
   return {

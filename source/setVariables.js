@@ -13,7 +13,9 @@ const { thalesAMMContract } = require("../contracts/ThalesAMM");
  * @returns {Promise<{round: number, roundEndTime: string, closingDate: number, skewImpactLimit: string, db: Firestore}>} An object containing the retrieved data.
  */
 const setVariables = async (network, db) => {
-  const decimals = network == "optimism" ? 18 : 6;
+  // const decimals = network == "optimism" ? 18 : 6;
+  const decimals = 18;
+
   const networkWallet = network == "optimism" ? wallet : arbWallet;
 
   // Create a new ethers.Contract object for interacting with the AMM Vault contract.
@@ -74,7 +76,7 @@ const setVariables = async (network, db) => {
   // get ethers wallet for optimism
   const usdLeft = await getUsdLeft(wallet, network);
   console.log(
-    `================ USD LEFT: $${ethers.formatUnits(usdLeft, decimals)} ================`,
+    `================ USD LEFT: $${Number(ethers.formatUnits(usdLeft, decimals)).toFixed(2)} ================`,
   );
 
   console.log(
