@@ -9,7 +9,8 @@
     "clean": "prettier . --write",
     "test_firebase": "node test/firebase.js",
     "test_ethers": "node test/ethers.js",
-    "test_redeem": "node test/redeem.js"
+    "test_redeem": "node test/redeem.js",
+    "test_overtime": "node test/overtime.js"
   },
   "repository": {
     "type": "git",

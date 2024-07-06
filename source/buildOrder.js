@@ -54,7 +54,6 @@ const buildOrder = async (
     let { previousTradeTotal, previousTradeDirection } =
       await getPreviousTradeAmount(db, market.address);
     if (previousTradeTotal > 0) {
-      console.log("PREVIOUSLY TRADED");
       tradedInRoundAlready = true;
       if (previousTradeDirection != market.position) {
         console.log(
@@ -129,7 +128,7 @@ const buildQuote = async (
       "ether",
     );
     console.log(
-      `Remaining allocation for ${market.currencyKey} ${market.position > 0 ? "DOWN" : "UP"}: $${Number(availableAllocationForMarket).toFixed(2)}`,
+      `Previously Traded - remaining allocation for ${market.currencyKey} ${market.position > 0 ? "DOWN" : "UP"}: $${Number(availableAllocationForMarket).toFixed(2)}`,
     );
   } else {
     availableAllocationForMarket = Number(availableAllocationForRound) * 0.05;
@@ -141,7 +140,7 @@ const buildQuote = async (
   const maxAllocationAmount = availableAllocationForMarket / market.price; // this is a cieling value, as it would a trade with zero slippage
   let amount = Math.round(maxAllocationAmount);
   console.log(
-    `Max AMM Amount: ${maxAmmAmount}, Available Allocation: $${Number(availableAllocationForMarket).toFixed(2)}, Market Price $${Number(market.price).toFixed(2)}, amount: ${amount}`,
+    `Max AMM Amount: ${maxAmmAmount}, Available Allocation: $${Number(availableAllocationForMarket).toFixed(2)}, Market Price $${Number(market.price).toFixed(2)}, Amount: ${amount}`,
   );
 
   if (
@@ -149,9 +148,15 @@ const buildQuote = async (
     amount < minTradeAmount ||
     maxAmmAmount == 0
   ) {
-    console.log(
-      `AMM amount available to buy (${maxAmmAmount}) is too small OR the quoted amount (${amount}) is below the minimum of (${minTradeAmount})`,
-    );
+    if (maxAmmAmount < minTradeAmount) {
+      console.log(`Max AMM Amount is too low. Skipping...`);
+    }
+    if (amount < minTradeAmount) {
+      console.log(`Amount to buy is too small. Skipping...`);
+    }
+    if (maxAmmAmount == 0) {
+      console.log(`No liquidity is available from AMM. Skipping...`);
+    }
     return { amount: 0, quote: 0, position: market.position };
   }
   while (amount < maxAmmAmount) {
