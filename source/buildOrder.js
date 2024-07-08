@@ -24,6 +24,7 @@ const buildOrder = async (
   minTradeAmount,
   tradingAllocationForRound,
   db,
+  usdLeft,
 ) => {
   let builtOrders = [];
   let thalesAMMContract;
@@ -73,6 +74,7 @@ const buildOrder = async (
       tradedInRoundAlready,
       // tradeLog,
       previousTradeTotal,
+      usdLeft,
     );
     if (quote.amount > 0) {
       // market example 1: eligible Market:  {  address: '0xfb227a2cdc11435bd5684ca2ec4426ebbeb5ed12', position: 0, currencyKey: 'SNX', price: 0.8115908079637828 }
@@ -99,6 +101,7 @@ const buildQuote = async (
   tradedInRoundAlready, // Flag indicating if the market has been traded in this round
   // tradeLog, // Trade log for the round
   previousTradeTotal, // Previous trade total
+  usdLeft,
 ) => {
   const minTradeAmount = 3;
   let finalAmount = 0,
@@ -117,6 +120,7 @@ const buildQuote = async (
       market.position,
     )) / BigInt(1e18), // always 18 decimal places
   );
+  const usdAvailable = Number(BigInt(usdLeft) / BigInt(1e18));
 
   // Get the available allocation for this market in this round
   // console.log(`Allocation for Round: ${ethers.formatUnits(allocation)}`);

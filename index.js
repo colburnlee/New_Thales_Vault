@@ -65,7 +65,7 @@ const checkNetwork = async (networkId, positionalContractAddress) => {
     networkId,
   );
 
-  if (usdLeft < minTradeAmount) {
+  if (BigInt(usdLeft) < BigInt(minTradeAmount) * 3n) {
     console.log("No more available funds for this round");
     return;
   }
@@ -97,6 +97,7 @@ const checkNetwork = async (networkId, positionalContractAddress) => {
     minTradeAmount,
     availableAllocationForRound,
     db,
+    usdLeft,
   );
 
   const executedTrades = await executeTrade(builtOrders, round, networkId, db);
